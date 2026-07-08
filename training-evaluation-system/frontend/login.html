@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实训教学检查评价系统 - 登录</title>
+    <link rel="icon" type="image/png" href="src/logo.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: #0a1628;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* 粒子画布基础样式，必须保留 */
+        #particles-js {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* 左侧装饰图形 */
+        .bg-shape {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 35%;
+            height: 100%;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            z-index: 1;
+            clip-path: polygon(0 0, 85% 0, 100% 100%, 0 100%);
+        }
+
+        .bg-shape::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at 30% 50%, rgba(79,110,247,0.15) 0%, transparent 60%);
+        }
+
+        /* 左侧内容区（浮动在背景上） */
+        .left-content {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 35%;
+            height: 100%;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .left-content .left-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* 登录卡片 */
+        .login-container {
+            position: relative;
+            z-index: 2;
+            margin-left: 15%;
+            width: 440px;
+        }
+
+        .login-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 48px 44px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.04);
+            position: relative;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4f6ef7, #6c5ce7, #a22bfe);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .login-header .welcome {
+            font-size: 13px;
+            color: #86909C;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .login-header .system-name {
+            font-family: 'STKaiti', '华文楷体', 'KaiTi', '楷体', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #1D2129;
+            letter-spacing: 3px;
+            line-height: 1.4;
+        }
+
+        .login-header .subtitle {
+            font-size: 14px;
+            color: #4E5969;
+            margin-top: 10px;
+            font-weight: 400;
+        }
+
+        .login-header .divider-line {
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(90deg, #0052D9, #1890FF);
+            border-radius: 2px;
+            margin: 16px auto 0;
+        }
+
+        /* 表单 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1D2129;
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #b2bec3;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            border: 1.5px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #2d3436;
+            background: #f8f9fa;
+            transition: all 0.25s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            border-color: #0052D9;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(0, 82, 217, 0.08);
+        }
+
+        .form-input::placeholder {
+            color: #b2bec3;
+        }
+
+        .form-input.error {
+            border-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+        .form-input.error:focus {
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1);
+        }
+
+        .error-msg {
+            font-size: 12px;
+            color: #e74c3c;
+            margin-top: 4px;
+            display: none;
+            padding-left: 2px;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+
+        /* 通用登录错误提示（红色警告文字） */
+        .login-error {
+            font-size: 13px;
+            color: #e74c3c;
+            background: #fff5f5;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        /* 选项行 */
+        .options-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #636e72;
+            cursor: pointer;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #0052D9;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            font-size: 13px;
+            color: #4f6ef7;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        /* 登录按钮 */
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #4f6ef7, #6c5ce7);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            font-family: inherit;
+        }
+
+        .login-btn:hover {
+            box-shadow: 0 8px 24px rgba(79, 110, 247, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 分割线 */
+        .login-footer {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #f0f0f5;
+        }
+
+        .login-footer p {
+            font-size: 13px;
+            color: #86909C;
+        }
+
+        .login-footer a {
+            color: #0052D9;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* 系统信息底部 */
+        .system-info {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #86909C;
+            position: relative;
+            z-index: 2;
+            margin-left: 15%;
+        }
+
+        /* 响应式 */
+        @media (max-width: 900px) {
+            .bg-shape {
+                display: none;
+            }
+            .left-content {
+                display: none;
+            }
+            .login-container {
+                margin-left: 0;
+                width: 90%;
+                max-width: 420px;
+            }
+            .system-info {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 36px 24px 32px;
+            }
+            .login-header .system-name {
+                font-size: 22px;
+            }
+        }
+
+        /* 联系管理员模态框 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 36px 40px 32px;
+            width: 380px;
+            max-width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            position: relative;
+            animation: modalIn 0.25s ease;
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-box .modal-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #0052D9, #1890FF);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: #fff;
+        }
+
+        .modal-box h3 {
+            font-size: 18px;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .modal-box .modal-desc {
+            font-size: 13px;
+            color: #636e72;
+            margin-bottom: 20px;
+        }
+
+        .modal-box .contact-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            text-align: left;
+            font-size: 14px;
+            color: #2d3436;
+        }
+
+        .modal-box .contact-item .label {
+            font-size: 12px;
+            color: #b2bec3;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .modal-box .contact-item .value {
+            font-weight: 500;
+        }
+
+        .modal-close-btn {
+            margin-top: 16px;
+            padding: 10px 32px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #0052D9, #1890FF);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.25s ease;
+        }
+
+        .modal-close-btn:hover {
+            box-shadow: 0 6px 20px rgba(0, 82, 217, 0.3);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <!-- 粒子背景容器，必须保留 -->
+    <div id="particles-js"></div>
+
+    <!-- 左侧品牌区域 -->
+    <div class="bg-shape"></div>
+    <div class="left-content">
+        <img class="left-image" src="src/picture.jpg" alt="">
+    </div>
+
+    <!-- 登录卡片 -->
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="welcome">WELCOME</div>
+                <div class="system-name">实训教学检查评价系统</div>
+                <div class="subtitle">Training Teaching Evaluation System</div>
+                <div class="divider-line"></div>
+            </div>
+
+            <form onsubmit="return false;">
+                <!-- 通用登录错误提示 -->
+                <div class="login-error" id="login-error"></div>
+
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </span>
+                        <input type="text" class="form-input" id="username" placeholder="学号/工号">
+                    </div>
+                    <div class="error-msg" id="username-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                        </span>
+                        <input type="password" class="form-input" id="password" placeholder="请输入密码">
+                    </div>
+                    <div class="error-msg" id="password-error"></div>
+                </div>
+
+                <div class="options-row">
+                    <label class="remember-me">
+                        <input type="checkbox" checked> 一周内免登录
+                    </label>
+                   
+                </div>
+
+                <button type="button" class="login-btn" onclick="handleLogin()">登 录</button>
+            </form>
+
+            <div class="login-footer">
+                <p>还没有账号？<a href="#" onclick="showContactModal(); return false;">联系管理员</a></p>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- 联系管理员模态框 -->
+    <div class="modal-overlay" id="contact-modal">
+        <div class="modal-box">
+            <div class="modal-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                </svg>
+            </div>
+            <h3>联系管理员</h3>
+            <div class="modal-desc">如遇账号问题，请通过以下方式联系管理员</div>
+            <div class="contact-item">
+                <span class="label">📧 邮箱</span>
+                <span class="value">admin@edu.cn</span>
+            </div>
+            <button class="modal-close-btn" onclick="closeContactModal()">我知道了</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            "particles": {
+                "number": {
+                    "value": 75,
+                    "density": { "enable": true, "value_area": 800 }
+                },
+                "color": { "value": "#4da6ff" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.8, "random": true },
+                "size": { "value": 3, "random": true },
+                "move": {
+                    "enable": true,
+                    "speed": 0.8,
+                    "direction": "none",
+                    "random": true,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 180,
+                    "color": "#3a8bd8",
+                    "opacity": 0.35,
+                    "width": 1
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": { "enable": true, "mode": "grab" },
+                    "onclick": { "enable": true, "mode": "push" },
+                    "resize": true
+                }
+            },
+            "retina_detect": true
+        });
+
+        /* 联系管理员模态框 */
+        function showContactModal() {
+            document.getElementById('contact-modal').classList.add('show');
+        }
+
+        function closeContactModal() {
+            document.getElementById('contact-modal').classList.remove('show');
+        }
+
+        // 点击遮罩层关闭
+        document.addEventListener('click', function(e) {
+            var modal = document.getElementById('contact-modal');
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+
+        function handleLogin() {
+            var username = document.getElementById('username');
+            var password = document.getElementById('password');
+            var usernameError = document.getElementById('username-error');
+            var passwordError = document.getElementById('password-error');
+            var loginError = document.getElementById('login-error');
+            var loginBtn = document.querySelector('.login-btn');
+
+            // 清除之前的错误状态
+            username.classList.remove('error');
+            password.classList.remove('error');
+            usernameError.classList.remove('show');
+            passwordError.classList.remove('show');
+            loginError.classList.remove('show');
+
+            var hasError = false;
+
+            if (username.value.trim() === '') {
+                username.classList.add('error');
+                usernameError.textContent = '用户名不能为空！';
+                usernameError.classList.add('show');
+                hasError = true;
+            }
+
+            if (password.value.trim() === '') {
+                password.classList.add('error');
+                passwordError.textContent = '密码不能为空！';
+                passwordError.classList.add('show');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            // 调用后端登录 API
+            loginBtn.disabled = true;
+            loginBtn.textContent = '登录中...';
+
+            fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username.value.trim(),
+                    password: password.value.trim()
+                })
+            })
+            .then(async function(resp) {
+                var contentType = resp.headers.get('content-type') || '';
+                var payload = null;
+
+                if (contentType.indexOf('application/json') !== -1) {
+                    try {
+                        payload = await resp.json();
+                    } catch (parseErr) {
+                        payload = null;
+                    }
+                } else {
+                    try {
+                        var text = await resp.text();
+                        payload = text ? JSON.parse(text) : null;
+                    } catch (parseErr2) {
+                        payload = null;
+                    }
+                }
+
+                if (!resp.ok) {
+                    throw new Error((payload && payload.detail) || '登录失败，请检查账号或联系管理员');
+                }
+
+                if (!payload) {
+                    throw new Error('登录接口返回为空，请稍后重试');
+                }
+
+                return payload;
+            })
+            .then(function(data) {
+                // 保存用户信息到 localStorage
+                localStorage.setItem('user', JSON.stringify({
+                    id: data.id,
+                    username: data.username,
+                    display_name: data.display_name,
+                    role: data.role,
+                    account_type: data.account_type
+                }));
+                // 根据账号类型跳转
+                if (data.account_type === 'student') {
+                    window.location.href = 'student.html';
+                } else if (data.account_type === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            })
+            .catch(function(err) {
+                loginError.textContent = err.message;
+                loginError.classList.add('show');
+            })
+            .finally(function() {
+                loginBtn.disabled = false;
+                loginBtn.textContent = '登 录';
+            });
+        }
+    </script>
+</body>
+</html>

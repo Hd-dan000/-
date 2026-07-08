@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实训管理平台 - 教师工作台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1677ff',
+            lightBlue: '#e8f3ff',
+            grayBg: '#f5f7fa',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .card-shadow {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      }
+      .nav-active {
+        @apply bg-primary text-white rounded-lg;
+      }
+      .tab-active {
+        @apply bg-lightBlue text-primary border-primary;
+      }
+    }
+  </style>
+</head>
+<body class="bg-grayBg font-sans text-gray-800">
+<!-- 顶部全局导航栏 -->
+<header class="bg-white px-6 py-4 card-shadow sticky top-0 z-10">
+  <div class="flex items-center justify-between">
+    <!-- 左侧Logo+主导航 -->
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white text-xl">
+          <i class="fa fa-cubes"></i>
+        </div>
+        <h1 class="text-xl font-bold text-gray-900">实训管理平台</h1>
+      </div>
+      <!-- 搜索框 -->
+      <div class="relative w-[420px]">
+        <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        <input 
+          type="text" 
+          placeholder="搜索班级、实训任务、学生姓名"
+          class="w-full pl-9 pr-4 py-2 rounded-lg bg-grayBg border-0 outline-none focus:ring-2 focus:ring-primary/30"
+        >
+      </div>
+    </div>
+    <!-- 右侧消息+个人信息 -->
+    <div class="flex items-center gap-5">
+      <div class="relative cursor-pointer">
+        <i class="fa fa-bell-o text-xl text-gray-600"></i>
+        <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">2</span>
+      </div>
+      <div class="relative cursor-pointer">
+        <i class="fa fa-comment-o text-xl text-gray-600"></i>
+        <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">1</span>
+      </div>
+      <div class="flex items-center gap-2 cursor-pointer">
+        <img src="https://picsum.photos/id/1005/40/40" class="w-9 h-9 rounded-full object-cover">
+        <span class="font-medium">张老师</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 二级横向菜单 -->
+  <nav class="flex gap-2 mt-4">
+    <button class="nav-active px-5 py-2 font-medium">首页</button>
+    <button class="px-5 py-2 hover:bg-grayBg rounded-lg transition">实训管理</button>
+    <button class="px-5 py-2 hover:bg-grayBg rounded-lg transition">评价规则配置</button>
+    <button class="px-5 py-2 hover:bg-grayBg rounded-lg transition">AI评阅报告</button>
+    <button class="px-5 py-2 hover:bg-grayBg rounded-lg transition">学生成长分析</button>
+    <button class="px-5 py-2 hover:bg-grayBg rounded-lg transition">大模型配置</button>
+  </nav>
+</header>
+
+<!-- 主内容区域 -->
+<main class="p-6 max-w-[1520px] mx-auto">
+  <!-- 顶部Tab切换 -->
+  <div class="flex gap-3 mb-6">
+    <button class="tab-active px-4 py-2 rounded-lg border font-medium">今日实训</button>
+    <button class="px-4 py-2 rounded-lg border border-gray-200 hover:border-primary transition">完成率统计</button>
+    <button class="px-4 py-2 rounded-lg border border-gray-200 hover:border-primary transition">设备状态</button>
+    <button class="px-4 py-2 rounded-lg border border-gray-200 hover:border-primary transition">待办事项</button>
+  </div>
+
+  <!-- 数据指标卡片行 -->
+  <div class="grid grid-cols-4 gap-5 mb-6">
+    <!-- 卡片1 授课班级 -->
+    <div class="bg-white rounded-xl p-5 card-shadow flex justify-between items-center">
+      <div>
+        <p class="text-gray-500 text-sm">授课班级</p>
+        <p class="text-[32px] font-bold mt-1">4</p>
+      </div>
+      <div class="w-12 h-10 rounded-lg bg-lightBlue flex items-center justify-center text-primary text-xl">
+        <i class="fa fa-users"></i>
+      </div>
+    </div>
+    <!-- 卡片2 进行中任务 -->
+    <div class="bg-white rounded-xl p-5 card-shadow flex justify-between items-center">
+      <div>
+        <p class="text-gray-500 text-sm">进行中实训任务</p>
+        <p class="text-[32px] font-bold mt-1">7</p>
+      </div>
+      <div class="w-12 h-10 rounded-lg bg-lightBlue flex items-center justify-center text-primary text-xl">
+        <i class="fa fa-list-alt"></i>
+      </div>
+    </div>
+    <!-- 卡片3 待批改报告 -->
+    <div class="bg-white rounded-xl p-5 card-shadow flex justify-between items-center">
+      <div>
+        <p class="text-gray-500 text-sm">待批改实训报告</p>
+        <p class="text-[32px] font-bold mt-1">36</p>
+      </div>
+      <div class="w-12 h-10 rounded-lg bg-lightBlue flex items-center justify-center text-primary text-xl">
+        <i class="fa fa-file-text-o"></i>
+      </div>
+    </div>
+    <!-- 卡片4 设备报修提醒 -->
+    <div class="bg-white rounded-xl p-5 card-shadow flex justify-between items-center">
+      <div>
+        <p class="text-gray-500 text-sm">设备报修提醒</p>
+        <p class="text-[32px] font-bold mt-1">2</p>
+      </div>
+      <div class="w-12 h-10 rounded-lg bg-lightBlue flex items-center justify-center text-primary text-xl">
+        <i class="fa fa-exclamation-triangle"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- 图表区域 左右分栏 -->
+  <div class="grid grid-cols-3 gap-5 mb-6">
+    <!-- 左侧大图表：实训完成趋势 -->
+    <div class="col-span-2 bg-white rounded-xl p-5 card-shadow">
+      <h3 class="font-medium text-lg mb-4 flex items-center gap-2">
+        <span class="w-1 h-5 bg-primary inline-block rounded"></span>
+        本月实训完成趋势
+      </h3>
+      <canvas id="trendChart" height="220"></canvas>
+    </div>
+    <!-- 右侧：合格率圆环 + 快捷操作 -->
+    <div class="bg-white rounded-xl p-5 card-shadow flex flex-col justify-between">
+      <h3 class="font-medium text-lg mb-4 flex items-center gap-2">
+        <span class="w-1 h-5 bg-primary inline-block rounded"></span>
+        本班实训合格率
+      </h3>
+      <div class="h-[160px] flex items-center justify-center">
+        <canvas id="rateChart" width="160" height="160"></canvas>
+      </div>
+      <!-- 教师快捷操作 -->
+      <div class="mt-4 border-t pt-4">
+        <p class="text-gray-500 text-sm mb-3">快捷操作</p>
+        <div class="flex flex-col gap-3">
+          <button class="w-full py-2 border border-primary text-primary rounded-lg flex items-center justify-center gap-2 hover:bg-lightBlue transition">
+            <i class="fa fa-plus"></i> 新建实训任务
+          </button>
+          <button class="w-full py-2 border border-gray-200 rounded-lg flex items-center justify-center gap-2 hover:bg-grayBg transition">
+            <i class="fa fa-check-square-o"></i> 批量批改报告
+          </button>
+          <button class="w-full py-2 border border-gray-200 rounded-lg flex items-center justify-center gap-2 hover:bg-grayBg transition">
+            <i class="fa fa-wrench"></i> 提交设备报修
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 今日实训安排表格 -->
+  <div class="bg-white rounded-xl p-5 card-shadow">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-medium text-lg flex items-center gap-2">
+        <span class="w-1 h-5 bg-primary inline-block rounded"></span>
+        今日我的实训安排
+      </h3>
+      <div class="flex gap-3">
+        <button class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-grayBg">导出日程</button>
+        <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">新增实训</button>
+      </div>
+    </div>
+    <table class="w-full text-left">
+      <thead>
+        <tr class="border-b border-gray-100">
+          <th class="py-3 pl-3 w-10">
+            <input type="checkbox" class="w-4 h-4">
+          </th>
+          <th class="py-3 text-gray-500 font-normal">班级</th>
+          <th class="py-3 text-gray-500 font-normal">实训项目</th>
+          <th class="py-3 text-gray-500 font-normal">实训机房</th>
+          <th class="py-3 text-gray-500 font-normal">时间段</th>
+          <th class="py-3 text-gray-500 font-normal">当前状态</th>
+          <th class="py-3 text-gray-500 font-normal">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b border-gray-50 hover:bg-grayBg/60">
+          <td class="py-4 pl-3"><input type="checkbox" class="w-4 h-4"></td>
+          <td>计算机2201</td>
+          <td>人工智能图像识别实训</td>
+          <td>实训机房A302</td>
+          <td>09:00 - 12:00</td>
+          <td><span class="px-2 py-1 bg-green-100 text-green-600 rounded text-sm">进行中</span></td>
+          <td class="flex gap-2">
+            <button class="text-primary text-sm">查看详情</button>
+            <button class="text-gray-500 text-sm">导出报告</button>
+          </td>
+        </tr>
+        <tr class="border-b border-gray-50 hover:bg-grayBg/60">
+          <td class="py-4 pl-3"><input type="checkbox" class="w-4 h-4"></td>
+          <td>软件2203</td>
+          <td>Web前端项目开发实训</td>
+          <td>实训机房B205</td>
+          <td>14:00 - 17:00</td>
+          <td><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-sm">未开始</span></td>
+          <td class="flex gap-2">
+            <button class="text-primary text-sm">编辑任务</button>
+            <button class="text-gray-500 text-sm">下发资料</button>
+          </td>
+        </tr>
+        <tr class="hover:bg-grayBg/60">
+          <td class="py-4 pl-3"><input type="checkbox" class="w-4 h-4"></td>
+          <td>大数据2102</td>
+          <td>数据挖掘综合实训</td>
+          <td>实训机房A401</td>
+          <td>18:30 - 21:00</td>
+          <td><span class="px-2 py-1 bg-orange-100 text-orange-600 rounded text-sm">待签到</span></td>
+          <td class="flex gap-2">
+            <button class="text-primary text-sm">签到管理</button>
+            <button class="text-gray-500 text-sm">评分录入</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- 图表初始化JS -->
+<script>
+// 趋势折线图
+const trendCtx = document.getElementById('trendChart').getContext('2d');
+new Chart(trendCtx, {
+  type: 'line',
+  data: {
+    labels: ['1日','5日','10日','15日','20日','25日','30日'],
+    datasets: [{
+      label: '实训完成人数',
+      data: [42, 98, 165, 256, 182, 210, 233],
+      fill: true,
+      backgroundColor: 'rgba(22, 119, 255, 0.12)',
+      borderColor: '#1677ff',
+      tension: 0.4,
+      pointRadius: 4
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } }, x: { grid: { display: false } } }
+  }
+});
+
+// 合格率圆环图
+const rateCtx = document.getElementById('rateChart').getContext('2d');
+new Chart(rateCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['合格','不合格'],
+    datasets: [{
+      data: [86, 14],
+      backgroundColor: ['#1677ff','#e8e8e8'],
+      borderWidth: 0,
+      cutout: '72%'
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: true }
+    }
+  }
+});
+</script>
+</body>
+</html>

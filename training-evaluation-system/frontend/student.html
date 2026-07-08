@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实训教学检查评价系统 - 学生端</title>
+    <link rel="icon" type="image/png" href="src/logo.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* ========== 顶部栏 ========== */
+        .top-header {
+            background: #fff;
+            border-bottom: 1px solid #e8e8e8;
+            padding: 0 32px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .top-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #4f6ef7, #6c5ce7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .platform-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+        .top-header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4f6ef7, #6c5ce7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .user-name {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+        .header-icon-btn {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .header-icon-btn:hover { background: #f5f5f5; }
+        .header-icon-btn svg { width: 20px; height: 20px; }
+
+        /* ========== 导航标签 ========== */
+        .nav-tabs {
+            background: #fff;
+            padding: 0 32px;
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .nav-tab {
+            padding: 0 20px;
+            height: 44px;
+            line-height: 44px;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-tab:hover { color: #4f6ef7; }
+        .nav-tab.active {
+            color: #4f6ef7;
+            border-bottom-color: #4f6ef7;
+        }
+
+        /* ========== 主内容区 ========== */
+        .main-content {
+            padding: 24px 32px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .hidden { display: none !important; }
+
+        /* ========== 项目卡片网格 ========== */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .project-card {
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+        .project-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(79,110,247,0.12);
+        }
+
+        /* 卡片顶部色条 */
+        .project-card-topbar {
+            height: 4px;
+            background: linear-gradient(90deg, #4f6ef7, #6c5ce7);
+        }
+
+        /* 卡片头部 */
+        .project-card-header {
+            padding: 16px 20px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .project-title-area {
+            flex: 1;
+            min-width: 0;
+        }
+        .project-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a2e;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+        .project-course {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* 状态标签组 */
+        .project-badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .badge-active { background: #eef2ff; color: #4f6ef7; }
+        .badge-completed { background: #e8f5e9; color: #2e7d32; }
+        .badge-pending { background: #fff8e1; color: #f57f17; }
+        .badge-submitted { background: #e3f2fd; color: #1565c0; }
+        .badge-unsubmitted { background: #fce4ec; color: #c62828; }
+        .badge-evaluated { background: #e8f5e9; color: #2e7d32; }
+
+        /* 卡片主体 */
+        .project-card-body {
+            padding: 0 20px 12px;
+        }
+        .project-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 20px;
+        }
+        .project-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #666;
+        }
+        .project-meta-item svg {
+            width: 14px; height: 14px;
+            color: #999;
+            flex-shrink: 0;
+        }
+
+        /* 卡片进度区 */
+        .project-card-progress {
+            padding: 0 20px 14px;
+        }
+        .progress-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+        .progress-bar-bg {
+            flex: 1;
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-right: 12px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #4f6ef7, #6c5ce7);
+            transition: width 0.4s;
+        }
+        .progress-text {
+            font-size: 12px;
+            color: #999;
+            white-space: nowrap;
+        }
+        .score-display {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4f6ef7;
+            line-height: 1;
+        }
+        .score-display .score-unit {
+            font-size: 12px;
+            font-weight: 400;
+            color: #999;
+        }
+        .score-label {
+            font-size: 11px;
+            color: #999;
+        }
+
+        /* 卡片底部操作 */
+        .project-card-footer {
+            padding: 12px 20px;
+            border-top: 1px solid #f5f5f5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer-info {
+            font-size: 12px;
+            color: #bbb;
+        }
+        .btn-primary-sm {
+            padding: 6px 18px;
+            border-radius: 6px;
+            border: none;
+            background: linear-gradient(135deg, #4f6ef7, #6c5ce7);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-primary-sm:hover { opacity: 0.85; }
+        .btn-outline-sm {
+            padding: 5px 17px;
+            border-radius: 6px;
+            border: 1px solid #4f6ef7;
+            color: #4f6ef7;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-outline-sm:hover {
+            background: #f0f2ff;
+        }
+
+        /* ========== 空状态 & 加载 ========== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+        .empty-text { font-size: 15px; color: #bbb; }
+        .loading-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+        }
+        .loading-spinner {
+            width: 36px; height: 36px;
+            border: 3px solid #f0f0f0;
+            border-top-color: #4f6ef7;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ========== 弹窗 ========== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.45);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px;
+            width: 480px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 16px; right: 16px;
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: #999;
+            cursor: pointer;
+        }
+
+        /* ========== Toast ========== */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .toast {
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease;
+        }
+        .toast-success { background: #43a047; }
+        .toast-error { background: #e53935; }
+        .toast-info { background: #4f6ef7; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 1024px) {
+            .project-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        }
+        @media (max-width: 768px) {
+            .top-header { padding: 0 16px; }
+            .main-content { padding: 16px; }
+            .nav-tabs { padding: 0 16px; overflow-x: auto; }
+            .project-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部栏 -->
+    <header class="top-header">
+        <div class="top-header-left">
+            <div class="logo">实</div>
+            <span class="platform-name">实训教学平台</span>
+        </div>
+        <div class="top-header-right">
+            <div class="header-icon-btn" title="消息">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar" id="user-avatar">学</div>
+                <span class="user-name" id="user-name">加载中...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 导航 -->
+    <nav class="nav-tabs">
+        <div class="nav-tab active" data-tab="home" onclick="switchTab('home')">首页</div>
+        <div class="nav-tab" data-tab="projects" onclick="switchTab('projects')">我的项目</div>
+        <div class="nav-tab" data-tab="tasks" onclick="switchTab('tasks')">实训任务</div>
+        <div class="nav-tab" data-tab="submissions" onclick="switchTab('submissions')">作业提交</div>
+        <div class="nav-tab" data-tab="reports" onclick="switchTab('reports')">评价报告</div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+
+        <!-- ===== 首页 ===== -->
+        <div id="tab-home">
+            <!-- 项目卡片网格 -->
+            <div id="project-grid-container">
+                <div class="loading-wrap"><div class="loading-spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- ===== 我的项目 ===== -->
+        <div id="tab-projects" class="hidden">
+            <div id="project-grid-container-full">
+                <div class="loading-wrap"><div class="loading-spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- ===== 实训任务 ===== -->
+        <div id="tab-tasks" class="hidden">
+            <div id="tasks-container">
+                <div class="loading-wrap"><div class="loading-spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- ===== 作业提交 ===== -->
+        <div id="tab-submissions" class="hidden">
+            <div id="submissions-container">
+                <div class="loading-wrap"><div class="loading-spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- ===== 评价报告 ===== -->
+        <div id="tab-reports" class="hidden">
+            <div id="reports-container">
+                <div class="loading-wrap"><div class="loading-spinner"></div></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 弹窗 -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        let currentUser = null;
+        let myProjects = [];
+        let mySubmissions = [];
+
+        // ===== 初始化 =====
+        document.addEventListener('DOMContentLoaded', function() {
+            currentUser = loadUser();
+            if (!currentUser) { window.location.href = 'login.html'; return; }
+            renderUserInfo();
+            loadHomeData();
+        });
+
+        function loadUser() {
+            try { var d = localStorage.getItem('user'); return d ? JSON.parse(d) : null; } catch(e) { return null; }
+        }
+
+        function authHeaders(extra) {
+            var h = {};
+            if (extra) { for (var k in extra) h[k] = extra[k]; }
+            if (!currentUser) return h;
+            h['X-User-Id'] = currentUser.id;
+            h['X-User-Name'] = currentUser.username || '';
+            h['X-User-Role'] = currentUser.role || '';
+            h['X-User-Type'] = currentUser.account_type || '';
+            return h;
+        }
+
+        function renderUserInfo() {
+            var name = currentUser.display_name || currentUser.username || '学生';
+            document.getElementById('user-name').textContent = name;
+            document.getElementById('user-avatar').textContent = name.charAt(0);
+        }
+
+        // ===== Tab切换 =====
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-tab').forEach(function(el) {
+                el.classList.toggle('active', el.getAttribute('data-tab') === tab);
+            });
+            document.querySelectorAll('[id^="tab-"]').forEach(function(el) {
+                el.classList.add('hidden');
+            });
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+
+            if (tab === 'home') loadHomeData();
+            else if (tab === 'projects') loadAllProjects();
+            else if (tab === 'tasks') loadTasks();
+            else if (tab === 'submissions') loadSubmissions();
+            else if (tab === 'reports') loadReports();
+        }
+
+        // ===== 首页：加载前4个项目 =====
+        async function loadHomeData() {
+            var container = document.getElementById('project-grid-container');
+            container.innerHTML = '<div class="loading-wrap"><div class="loading-spinner"></div></div>';
+            try {
+                var resp = await fetch('/api/training/my-projects', { headers: authHeaders() });
+                var data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || '请求失败');
+                myProjects = data || [];
+                renderProjectGrid(container, myProjects.slice(0, 4), true);
+            } catch(e) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">加载失败：' + e.message + '</div></div>';
+            }
+        }
+
+        // ===== 全部项目 =====
+        async function loadAllProjects() {
+            var container = document.getElementById('project-grid-container-full');
+            container.innerHTML = '<div class="loading-wrap"><div class="loading-spinner"></div></div>';
+            try {
+                var resp = await fetch('/api/training/my-projects', { headers: authHeaders() });
+                var data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || '请求失败');
+                myProjects = data || [];
+                renderProjectGrid(container, myProjects, false);
+            } catch(e) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">加载失败：' + e.message + '</div></div>';
+            }
+        }
+
+        // ===== 渲染项目卡片 =====
+        function renderProjectGrid(container, projects, isHome) {
+            if (!container) return;
+            if (!projects || projects.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">暂无项目</div></div>';
+                return;
+            }
+
+            var html = '<div class="project-grid">';
+            projects.forEach(function(p) {
+                html += buildProjectCard(p);
+            });
+
+            // 首页超过4个项目时加"更多"卡片
+            if (isHome && myProjects.length > 4) {
+                html += '<div class="project-card" onclick="switchTab(\'projects\')" style="display:flex;align-items:center;justify-content:center;min-height:200px;border:2px dashed #e0e0e0;background:#fafafa;">' +
+                    '<div style="text-align:center;">' +
+                    '<div style="font-size:32px;color:#4f6ef7;margin-bottom:8px;">→</div>' +
+                    '<div style="font-size:15px;color:#4f6ef7;font-weight:600;">查看全部 ' + myProjects.length + ' 个项目</div>' +
+                    '</div></div>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function buildProjectCard(p) {
+            // 状态标签
+            var statusBadge = '';
+            if (p.status === 'active') statusBadge = '<span class="badge badge-active">进行中</span>';
+            else if (p.status === 'completed') statusBadge = '<span class="badge badge-completed">已完成</span>';
+            else statusBadge = '<span class="badge badge-pending">未开始</span>';
+
+            // 提交标签
+            var submitBadge = '';
+            if (p.hasSubmitted) {
+                if (p.submission_status === 'evaluated') submitBadge = '<span class="badge badge-evaluated">已评分</span>';
+                else submitBadge = '<span class="badge badge-submitted">已提交</span>';
+            } else {
+                submitBadge = '<span class="badge badge-unsubmitted">未提交</span>';
+            }
+
+            // 进度 & 得分
+            var progressHtml = '';
+            if (p.hasSubmitted && p.final_score != null) {
+                progressHtml =
+                    '<div class="score-display">' + p.final_score + '<span class="score-unit">分</span></div>' +
+                    '<div class="score-label">综合评分</div>';
+            } else {
+                var submittedCount = p.submission_count || 0;
+                var evaluatedCount = p.evaluated_count || 0;
+                var progressPct = Math.min(100, Math.round((submittedCount / Math.max(submittedCount, 1)) * 100));
+                var progressText = submittedCount > 0 ? '已提交 ' + submittedCount + ' 次' : '尚未提交';
+                progressHtml =
+                    '<div class="progress-bar-bg"><div class="progress-bar-fill" style="width:' + progressPct + '%"></div></div>' +
+                    '<span class="progress-text">' + progressText + '</span>';
+            }
+
+            // 截止日期
+            var deadlineText = '';
+            if (p.deadline) {
+                deadlineText = '<div class="project-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>截止：' + p.deadline + '</span></div>';
+            }
+
+            return '<div class="project-card" onclick="enterProject(' + p.id + ')">' +
+                '<div class="project-card-topbar"></div>' +
+                '<div class="project-card-header">' +
+                    '<div class="project-title-area">' +
+                        '<div class="project-title">' + (p.title || p.courseName || '未命名项目') + '</div>' +
+                        '<div class="project-course">' + (p.courseName || p.course_name || '') + '</div>' +
+                    '</div>' +
+                    '<div class="project-badges">' + statusBadge + submitBadge + '</div>' +
+                '</div>' +
+                '<div class="project-card-body">' +
+                    '<div class="project-meta">' +
+                        '<div class="project-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>' + (p.teacher_name || '未指定教师') + '</span></div>' +
+                        deadlineText +
+                        '<div class="project-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>' + (p.status === 'active' ? '进行中' : p.status === 'completed' ? '已完成' : '未开始') + '</span></div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="project-card-progress"><div class="progress-row">' + progressHtml + '</div></div>' +
+                '<div class="project-card-footer">' +
+                    '<span class="footer-info">' + formatDate(p.updated_at) + ' 更新</span>' +
+                    '<button class="' + (p.hasSubmitted ? 'btn-outline-sm' : 'btn-primary-sm') + '" onclick="event.stopPropagation();goSubmit(' + p.id + ')">' + (p.hasSubmitted ? '查看提交' : '提交作业') + '</button>' +
+                '</div>' +
+            '</div>';
+        }
+
+        function enterProject(projectId) {
+            showToast('进入项目 #' + projectId, 'info');
+        }
+
+        function goSubmit(projectId) {
+            showToast('提交项目 #' + projectId, 'info');
+        }
+
+        function formatDate(d) {
+            if (!d) return '';
+            var date = new Date(d);
+            if (isNaN(date.getTime())) return d;
+            return date.getFullYear() + '-' + (date.getMonth()+1).toString().padStart(2,'0') + '-' + date.getDate().toString().padStart(2,'0');
+        }
+
+        // ===== 实训任务 =====
+        async function loadTasks() {
+            var container = document.getElementById('tasks-container');
+            container.innerHTML = '<div class="loading-wrap"><div class="loading-spinner"></div></div>';
+            try {
+                var resp = await fetch('/api/training/student/list', { headers: authHeaders() });
+                var data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || '请求失败');
+                var tasks = data.tasks || [];
+                if (tasks.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">暂无实训任务</div></div>';
+                } else {
+                    var html = '<div style="display:grid;gap:12px;">';
+                    tasks.forEach(function(t) {
+                        html += '<div style="background:#fff;border-radius:10px;padding:16px 20px;box-shadow:0 1px 4px rgba(0,0,0,0.06);display:flex;justify-content:space-between;align-items:center;">' +
+                            '<div><strong>' + (t.title || '—') + '</strong><div style="font-size:12px;color:#999;margin-top:4px;">' + (t.course_name || '') + ' · 截止：' + (t.deadline || '—') + '</div></div>' +
+                            '<button class="btn-primary-sm" onclick="showToast(\'提交任务',' + t.id + '\',\'info\')">提交作业</button></div>';
+                    });
+                    html += '</div>';
+                    container.innerHTML = html;
+                }
+            } catch(e) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">加载失败：' + e.message + '</div></div>';
+            }
+        }
+
+        // ===== 提交记录 =====
+        async function loadSubmissions() {
+            var container = document.getElementById('submissions-container');
+            container.innerHTML = '<div class="loading-wrap"><div class="loading-spinner"></div></div>';
+            try {
+                var resp = await fetch('/api/homework/student/my-submissions', { headers: authHeaders() });
+                var data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || '请求失败');
+                mySubmissions = data.submissions || [];
+                if (mySubmissions.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📤</div><div class="empty-text">暂无提交记录</div></div>';
+                } else {
+                    var html = '';
+                    mySubmissions.forEach(function(s) {
+                        html += buildSubmissionCard(s);
+                    });
+                    container.innerHTML = html;
+                }
+            } catch(e) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">加载失败：' + e.message + '</div></div>';
+            }
+        }
+
+        function buildSubmissionCard(s) {
+            var statusText = s.status === 'evaluated' ? '已评分' : '待评分';
+            var statusClass = s.status === 'evaluated' ? 'badge-evaluated' : 'badge-submitted';
+            var scoreText = s.final_score != null ? '<span style="color:#4f6ef7;font-weight:700;font-size:18px;">' + s.final_score + '</span><span style="color:#999;font-size:12px;">分</span>' : '<span style="color:#bbb;">待评分</span>';
+            return '<div style="background:#fff;border-radius:10px;padding:16px 20px;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">' +
+                '<div style="flex:1;">' +
+                    '<div style="font-weight:600;margin-bottom:4px;">' + (s.training_title || '—') + '</div>' +
+                    '<div style="font-size:12px;color:#999;">' + formatDate(s.created_at) + ' 提交</div>' +
+                '</div>' +
+                '<div style="display:flex;align-items:center;gap:16px;">' +
+                    '<div style="text-align:right;">' + scoreText + '</div>' +
+                    '<span class="badge ' + statusClass + '">' + statusText + '</span>' +
+                '</div>' +
+            '</div>';
+        }
+
+        // ===== 评价报告 =====
+        async function loadReports() {
+            var container = document.getElementById('reports-container');
+            container.innerHTML = '<div class="loading-wrap"><div class="loading-spinner"></div></div>';
+            try {
+                var resp = await fetch('/api/homework/student/reports', { headers: authHeaders() });
+                var data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || '请求失败');
+                var reports = data.reports || [];
+                if (reports.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无评价报告</div></div>';
+                } else {
+                    var html = '';
+                    reports.forEach(function(r) {
+                        html += '<div style="background:#fff;border-radius:10px;padding:16px 20px;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">' +
+                            '<div><strong>' + (r.training_title || '—') + '</strong><div style="font-size:12px;color:#999;margin-top:4px;">' + (r.reviewed_at || '—') + ' 评阅</div></div>' +
+                            '<div style="text-align:right;"><div style="color:#4f6ef7;font-weight:700;font-size:20px;">' + (r.score != null ? r.score : '—') + '</div><div style="font-size:11px;color:#999;">分</div></div></div>';
+                    });
+                    container.innerHTML = html;
+                }
+            } catch(e) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">加载失败：' + e.message + '</div></div>';
+            }
+        }
+
+        // ===== 工具函数 =====
+        function showModal(content, title) {
+            document.getElementById('modal-content').innerHTML = '<h3 style="margin-bottom:16px;">' + (title || '提示') + '</h3>' + content;
+            document.getElementById('modal-overlay').classList.add('show');
+        }
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('show');
+        }
+        function showToast(message, type) {
+            type = type || 'success';
+            var container = document.getElementById('toast-container');
+            var toast = document.createElement('div');
+            toast.className = 'toast toast-' + type;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(function() { if (toast.parentNode) toast.remove(); }, 3000);
+        }
+        document.getElementById('modal-overlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
+</body>
+</html>

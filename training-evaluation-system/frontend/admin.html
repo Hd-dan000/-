@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实训教学检查评价系统 - 管理员中心</title>
+    <link rel="icon" type="image/png" href="src/logo.png">
+    <style>
+        :root {
+            --primary: #0052D9;
+            --primary-dark: #003A9B;
+            --primary-hover: #1890FF;
+            --primary-light: #E6F7FF;
+            --primary-gradient: linear-gradient(135deg, #0052D9 0%, #1890FF 100%);
+            --success: #52C41A;
+            --success-light: #F6FFED;
+            --warning: #FAAD14;
+            --warning-light: #FFFBE6;
+            --danger: #FF4D4F;
+            --danger-light: #FFF2F0;
+            --info: #1890FF;
+            --info-light: #E6F7FF;
+            --text-primary: #1D2129;
+            --text-secondary: #4E5969;
+            --text-muted: #86909C;
+            --bg-body: #F5F7FA;
+            --bg-card: #ffffff;
+            --border: #E5E6EB;
+            --border-light: #E5E6EB;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --sidebar-width: 240px;
+            --topbar-height: 64px;
+            --transition: all 0.25s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            color: var(--text-primary);
+            background: var(--bg-body);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .shell {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            padding: 24px 18px;
+            background: #2f4050;
+            color: #fff;
+            border-right: none;
+            box-shadow: none;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 10px 10px 20px;
+            margin-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: #293846;
+        }
+
+        .brand-mark {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            background: linear-gradient(135deg, #4f6ef7, #7c8cff);
+            box-shadow: 0 12px 28px rgba(79, 110, 247, 0.34);
+            flex-shrink: 0;
+        }
+
+        .brand-title {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            line-height: 1.35;
+        }
+
+        .brand-subtitle {
+            margin-top: 4px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.56);
+        }
+
+        .sidebar-section {
+            margin-top: 14px;
+        }
+
+        .sidebar-label {
+            padding: 10px 12px 8px;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.42);
+        }
+
+        .nav-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 14px;
+            border-radius: var(--radius-sm);
+            color: #a7b1c2;
+            transition: var(--transition);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: #293846;
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background: #293846;
+            color: #fff;
+            border-left-color: #1c84c6;
+        }
+
+        .nav-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            color: inherit;
+        }
+
+        .sidebar-footer {
+            margin-top: 18px;
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .sidebar-footer h4 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .sidebar-footer p {
+            font-size: 12px;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .main {
+            padding: 24px 28px 40px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 18px 22px;
+            border-radius: var(--radius-lg);
+            background: #A7B1C2;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .topbar-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .page-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--primary-dark);
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .page-desc {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: var(--success-light);
+            color: var(--success);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: currentColor;
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: var(--primary-light);
+            border: 1px solid var(--border-light);
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-weight: 700;
+            background: var(--primary-gradient);
+        }
+
+        .user-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .user-name {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .hero {
+            margin-top: 22px;
+            padding: 28px;
+            border-radius: 28px;
+            color: #fff;
+            background:
+                radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 30%),
+                linear-gradient(135deg, #18264f 0%, #2746a6 48%, #0052D9 100%);
+            box-shadow: 0 26px 60px rgba(49, 71, 170, 0.26);
+            display: grid;
+            grid-template-columns: 1.3fr 0.9fr;
+            gap: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            right: -40px;
+            bottom: -70px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            filter: blur(6px);
+        }
+
+        .hero h2 {
+            font-size: 32px;
+            line-height: 1.25;
+            margin-bottom: 14px;
+        }
+
+        .hero p {
+            color: rgba(255, 255, 255, 0.82);
+            line-height: 1.8;
+            max-width: 760px;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 12px rgba(0, 82, 217, 0.35);
+            opacity: 0.9;
+            color: #fff;
+        }
+
+        .btn-secondary {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+
+        .hero-side {
+            display: grid;
+            gap: 14px;
+        }
+
+        .hero-metric {
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-metric .label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.72);
+            margin-bottom: 6px;
+        }
+
+        .hero-metric .value {
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        .hero-metric .note {
+            margin-top: 6px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.72);
+        }
+
+        .section {
+            margin-top: 24px;
+            scroll-margin-top: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
+        .section-subtitle {
+            margin-top: 6px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card {
+            padding: 18px;
+            display: grid;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            background: var(--primary-gradient);
+        }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
+        .stat-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .trend-up {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .shortcut-card {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            min-height: 188px;
+            transition: transform 0.22s ease, box-shadow 0.22s ease;
+        }
+
+        .shortcut-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 24px 44px rgba(0, 82, 217, 0.16);
+        }
+
+        .shortcut-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            background: var(--primary-gradient);
+        }
+
+        .shortcut-card h3 {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .shortcut-card p {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.8;
+            flex: 1;
+        }
+
+        .shortcut-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .panel {
+            padding: 22px;
+        }
+
+        .list {
+            display: grid;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            background: var(--bg-body);
+            border: 1px solid var(--border-light);
+        }
+
+        .list-item strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .list-item p {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            gap: 4px;
+        }
+
+        .tag.success {
+            background: var(--success-light);
+            color: #52C41A;
+        }
+
+        .tag.warning {
+            background: var(--warning-light);
+            color: #D48806;
+        }
+
+        .tag.info {
+            background: var(--info-light);
+            color: #1890FF;
+        }
+
+        .tag.danger {
+            background: var(--danger-light);
+            color: #FF4D4F;
+        }
+
+        .footer-note {
+            margin-top: 18px;
+            color: var(--text-muted);
+            font-size: 12px;
+            text-align: center;
+        }
+
+        @media (max-width: 1200px) {
+            .shell {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            }
+
+            .main {
+                padding-top: 18px;
+            }
+
+            .hero,
+            .grid-4,
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main {
+                padding: 14px;
+            }
+
+            .topbar,
+            .hero,
+            .panel {
+                padding: 18px;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .hero,
+            .grid-4,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            .hero h2 {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="brand-title">管理员中心</div>
+                    <div class="brand-subtitle">实训教学检查评价系统</div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">核心功能</div>
+                <nav class="nav-list">
+                    <a class="nav-item active" href="#overview" data-target="overview">
+                        <span class="nav-icon">🏠</span>
+                        <span>系统总览</span>
+                    </a>
+                    <a class="nav-item" href="#user-management" data-target="user-management">
+                        <span class="nav-icon">👥</span>
+                        <span>账号权限管理</span>
+                    </a>
+                    <a class="nav-item" href="#evaluation-templates" data-target="evaluation-templates">
+                        <span class="nav-icon">🧩</span>
+                        <span>评价模板管理</span>
+                    </a>
+                    <a class="nav-item" href="#system-config" data-target="system-config">
+                        <span class="nav-icon">⚙️</span>
+                        <span>系统基础配置</span>
+                    </a>
+                    <a class="nav-item" href="#ops-center" data-target="ops-center">
+                        <span class="nav-icon">📊</span>
+                        <span>统计与日志</span>
+                    </a>
+                    <a class="nav-item" href="#training-evaluation" data-target="training-evaluation">
+                        <span class="nav-icon">📝</span>
+                        <span>实训与评价</span>
+                    </a>
+                    <a class="nav-item" href="#report-management" data-target="report-management">
+                        <span class="nav-icon">📄</span>
+                        <span>报表与导出</span>
+                    </a>
+                    <a class="nav-item" href="#llm-config" data-target="llm-config">
+                        <span class="nav-icon">🤖</span>
+                        <span>大模型配置</span>
+                    </a>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <h4>管理员权限说明</h4>
+                <p>默认面向超级管理员展示完整入口，涵盖学生、教师与管理员账号维护，系统参数控制，评价模板配置，统计分析与日志备份。</p>
+            </div>
+        </aside>
+
+        <main class="main">
+            <section class="section">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">运营概览</div>
+                        <div class="section-subtitle">管理员进入后第一眼看到的关键指标。</div>
+                    </div>
+                </div>
+                <div class="grid-4">
+                    <div class="card stat-card">
+                        <div class="stat-top">
+                            <div class="stat-label">账号总数</div>
+                            <div class="stat-icon">👥</div>
+                        </div>
+                        <div class="stat-value">128</div>
+                        <div class="stat-foot"><span>学生、教师、管理员统一管理</span><span class="trend-up">+8 本周</span></div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-top">
+                            <div class="stat-label">待处理评价</div>
+                            <div class="stat-icon" style="background:linear-gradient(135deg,#f59e0b,#f97316)">🧩</div>
+                        </div>
+                        <div class="stat-value">24</div>
+                        <div class="stat-foot"><span>待批量评价与补评</span><span class="trend-up">+6 今日</span></div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-top">
+                            <div class="stat-label">系统配置项</div>
+                            <div class="stat-icon" style="background:linear-gradient(135deg,#00b894,#0891b2)">⚙️</div>
+                        </div>
+                        <div class="stat-value">12</div>
+                        <div class="stat-foot"><span>上传、模板、开关集中配置</span><span class="trend-up">稳定</span></div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-top">
+                            <div class="stat-label">日志与备份</div>
+                            <div class="stat-icon" style="background:linear-gradient(135deg,#ef4444,#f97316)">📦</div>
+                        </div>
+                        <div class="stat-value">3</div>
+                        <div class="stat-foot"><span>操作日志、备份包、审计导出</span><span class="trend-up">最近 1 小时</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="quick-actions">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">快捷入口</div>
+                        <div class="section-subtitle">直接进入管理员工作流的核心模块。</div>
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <a class="card shortcut-card" href="#user-management">
+                        <div class="shortcut-badge">👥</div>
+                        <div>
+                            <h3>账号权限管理</h3>
+                            <p>维护学生、教师、管理员账号，支持新增、编辑、启用/禁用和删除，适合超级管理员集中处理账号生命周期。</p>
+                        </div>
+                        <span class="shortcut-link">进入管理 <span>→</span></span>
+                    </a>
+                    <a class="card shortcut-card" href="#evaluation-templates">
+                        <div class="shortcut-badge" style="background:linear-gradient(135deg,#FAAD14,#FFC53D)">🧩</div>
+                        <div>
+                            <h3>评价模板管理</h3>
+                            <p>统一管理评价模板，支持设为默认模板、编辑模板项、删除冗余模板，方便按不同实训场景快速切换。</p>
+                        </div>
+                        <span class="shortcut-link">进入管理 <span>→</span></span>
+                    </a>
+                    <a class="card shortcut-card" href="#system-config">
+                        <div class="shortcut-badge" style="background:linear-gradient(135deg,#52C41A,#1890FF)">⚙️</div>
+                        <div>
+                            <h3>系统基础配置</h3>
+                            <p>统一设置文件上传大小限制、报表模板和系统开关，避免配置分散在多个页面，便于后期部署维护。</p>
+                        </div>
+                        <span class="shortcut-link">进入管理 <span>→</span></span>
+                    </a>
+                    <a class="card shortcut-card" href="#ops-center">
+                        <div class="shortcut-badge" style="background:linear-gradient(135deg,#0052D9,#1890FF)">📊</div>
+                        <div>
+                            <h3>统计与日志</h3>
+                            <p>查看跨班级统计、最近操作日志，并提供备份下载入口，便于管理员做审计和数据回溯。</p>
+                        </div>
+                        <span class="shortcut-link">进入管理 <span>→</span></span>
+                    </a>
+                    <a class="card shortcut-card" href="#training-evaluation">
+                        <div class="shortcut-badge" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">📝</div>
+                        <div>
+                            <h3>实训与评价</h3>
+                            <p>管理实训任务、查看学生提交和评价流程，适合从项目维度快速推进教学检查和成绩核查。</p>
+                        </div>
+                        <span class="shortcut-link">进入管理 <span>→</span></span>
+                    </a>
+                    <a class="card shortcut-card" href="#report-management">
+                        <div class="shortcut-badge" style="background:linear-gradient(135deg,#06b6d4,#2563eb)">📄</div>
+                        <div>
+                            <h3>报表与导出</h3>
+                            <p>生成教学报表、导出结果并统一模板风格，方便学院或系部按固定格式归档和上报。</p>
+                        </div>
+                        <span class="shortcut-link">进入管理 <span>→</span></span>
+                    </a>
+                </div>
+            </section>
+
+            <section class="section" id="user-management">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">账号权限管理</div>
+                        <div class="section-subtitle">统一维护三类账号：管理员、教师、学生。</div>
+                    </div>
+                </div>
+                <div class="card panel">
+                    <div class="list">
+                        <div class="list-item">
+                            <div>
+                                <strong>学生账号</strong>
+                                <p>导入、编辑、启用/禁用、重置密码、按班级筛选，适合批量管理教学对象。</p>
+                            </div>
+                            <span class="tag info">student</span>
+                        </div>
+                        <div class="list-item">
+                            <div>
+                                <strong>教师账号</strong>
+                                <p>维护教师信息与教学组权限，支持实训审核、评价与报表查看。</p>
+                            </div>
+                            <span class="tag success">teacher</span>
+                        </div>
+                        <div class="list-item">
+                            <div>
+                                <strong>管理员账号</strong>
+                                <p>维护系统管理员和超级管理员，区分普通管理与系统级管理权限。</p>
+                            </div>
+                            <span class="tag warning">admin</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="evaluation-templates">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">评价模板管理</div>
+                        <div class="section-subtitle">按不同实训场景配置模板，保持评价口径统一。</div>
+                    </div>
+                </div>
+                <div class="card panel">
+                    <div class="list">
+                        <div class="list-item">
+                            <div>
+                                <strong>标准模板</strong>
+                                <p>覆盖完整评分维度，适合正式教学检查与综合评价。</p>
+                            </div>
+                            <span class="tag success">默认</span>
+                        </div>
+                        <div class="list-item">
+                            <div>
+                                <strong>精简模板</strong>
+                                <p>适合快速抽查或阶段性评价，减少教师操作成本。</p>
+                            </div>
+                            <span class="tag info">可切换</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="system-config">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">系统基础配置</div>
+                        <div class="section-subtitle">把最常变动的系统参数统一收口。</div>
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="card panel">
+                        <h3 style="margin-bottom:10px;">上传限制</h3>
+                        <p style="color:var(--text-muted);line-height:1.8;">控制文件上传大小，减少大文件导致的失败与资源占用。</p>
+                    </div>
+                    <div class="card panel">
+                        <h3 style="margin-bottom:10px;">报表模板</h3>
+                        <p style="color:var(--text-muted);line-height:1.8;">统一标准版或精简版模板，保持输出格式一致。</p>
+                    </div>
+                    <div class="card panel">
+                        <h3 style="margin-bottom:10px;">系统开关</h3>
+                        <p style="color:var(--text-muted);line-height:1.8;">集中控制提交、评价、补评、报表生成与维护模式。</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="ops-center">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">统计与日志</div>
+                        <div class="section-subtitle">辅助管理员掌握教学运行情况与系统审计信息。</div>
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="card panel">
+                        <h3 style="margin-bottom:10px;">跨班级统计</h3>
+                        <p style="color:var(--text-muted);line-height:1.8;">按班级、专业、课程维度查看提交和评价情况。</p>
+                    </div>
+                    <div class="card panel">
+                        <h3 style="margin-bottom:10px;">操作日志</h3>
+                        <p style="color:var(--text-muted);line-height:1.8;">记录管理员和教师的关键操作，方便追踪配置变化。</p>
+                    </div>
+                    <div class="card panel">
+                        <h3 style="margin-bottom:10px;">备份下载</h3>
+                        <p style="color:var(--text-muted);line-height:1.8;">导出数据库快照、操作日志与备份清单，支持离线恢复。</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="training-evaluation">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">实训与评价</div>
+                        <div class="section-subtitle">把教学检查和评价流程放在统一入口下管理。</div>
+                    </div>
+                </div>
+                <div class="card panel">
+                    <div class="list">
+                        <div class="list-item">
+                            <div>
+                                <strong>实训项目管理</strong>
+                                <p>创建、编辑、发布和归档实训任务，统一管理教学过程。</p>
+                            </div>
+                            <span class="tag info">training</span>
+                        </div>
+                        <div class="list-item">
+                            <div>
+                                <strong>提交与评价流程</strong>
+                                <p>查看学生提交、自动解析、教师评价和补评状态。</p>
+                            </div>
+                            <span class="tag success">evaluation</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="report-management">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">报表与导出</div>
+                        <div class="section-subtitle">用于教学归档、上报与阶段总结。</div>
+                    </div>
+                </div>
+                <div class="card panel">
+                    <div class="list">
+                        <div class="list-item">
+                            <div>
+                                <strong>报表生成</strong>
+                                <p>按模板输出 HTML 或 CSV 报表，便于打印和归档。</p>
+                            </div>
+                            <span class="tag warning">report</span>
+                        </div>
+                        <div class="list-item">
+                            <div>
+                                <strong>大模型配置</strong>
+                                <p>保留本地模型与云端模型两种接入方式，便于后期扩展。</p>
+                            </div>
+                            <span class="tag danger">llm</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="footer-note">本页为独立管理员首页原型，未引入外部库，适合作为龙芯服务器部署时的轻量入口设计。</div>
+        </main>
+    </div>
+
+    <script>
+        const navItems = Array.from(document.querySelectorAll('.nav-item'));
+        const sections = navItems
+            .map(item => document.getElementById(item.dataset.target))
+            .filter(Boolean);
+
+        function setActive(id) {
+            navItems.forEach(item => {
+                item.classList.toggle('active', item.dataset.target === id);
+            });
+        }
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => setActive(item.dataset.target));
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+            if (visible) {
+                setActive(visible.target.id);
+            }
+        }, {
+            root: null,
+            threshold: [0.25, 0.45, 0.6]
+        });
+
+        sections.forEach(section => observer.observe(section));
+    </script>
+</body>
+</html>

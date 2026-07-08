@@ -1,0 +1,184 @@
+﻿{
+    "total":  6,
+    "trainings":  [
+                      {
+                          "id":  12,
+                          "title":  "111",
+                          "description":  "111",
+                          "course_name":  "111",
+                          "teacher_name":  null,
+                          "expected_steps":  null,
+                          "expected_outcomes":  null,
+                          "status":  "not_started",
+                          "created_at":  "2026-07-05T15:10:08.464397",
+                          "updated_at":  "2026-07-05T23:11:05.140888",
+                          "course_id":  7,
+                          "deadline":  "2026-07-11",
+                          "dimensions":  "[]",
+                          "document_url":  "",
+                          "code_standard":  "",
+                          "category_weights":  "{\"document\":0.333,\"ui\":0.333,\"code\":0.333}",
+                          "courseName":  "111",
+                          "assignedClassIds":  [
+                                                   2
+                                               ],
+                          "assignedClasses":  [
+                                                  "è½¯ä»¶2402ç­"
+                                              ],
+                          "submissionCount":  0,
+                          "evaluatedCount":  0,
+                          "avg_score":  0.0,
+                          "studentCount":  20
+                      },
+                      {
+                          "id":  14,
+                          "title":  "Javaå¼åå®è®­äºç­",
+                          "description":  "é¢åæä¸å®Javaåºç¡å­¦åçè¿é¶å®è®­é¡¹ç®",
+                          "course_name":  "Javaå¼åå®è®­äºç­",
+                          "teacher_name":  "æèå¸",
+                          "expected_steps":  null,
+                          "expected_outcomes":  null,
+                          "status":  "in_progress",
+                          "created_at":  "2026-07-05T20:42:56.776086",
+                          "updated_at":  "2026-07-05T20:42:56.776086",
+                          "course_id":  1,
+                          "deadline":  "2026-08-15",
+                          "dimensions":  "[]",
+                          "document_url":  null,
+                          "code_standard":  null,
+                          "category_weights":  "{\"document\":0.333,\"ui\":0.333,\"code\":0.333}",
+                          "courseName":  "âæºèâä¼ä¸çº§äººåèµæºç®¡çç³»ç»ï¼HRMSï¼",
+                          "assignedClassIds":  [
+
+                                               ],
+                          "assignedClasses":  [
+                                                  "è½¯ä»¶2401ç­",
+                                                  "è½¯ä»¶2402ç­"
+                                              ],
+                          "submissionCount":  0,
+                          "evaluatedCount":  0,
+                          "avg_score":  0.0,
+                          "studentCount":  0
+                      },
+                      {
+                          "id":  15,
+                          "title":  "Javaå¼åå®è®­ä¸ç­",
+                          "description":  "é¢åä¼ä¸çº§å¼åå­¦åçé«çº§å®è®­é¡¹ç®",
+                          "course_name":  "Javaå¼åå®è®­ä¸ç­",
+                          "teacher_name":  "çèå¸",
+                          "expected_steps":  null,
+                          "expected_outcomes":  null,
+                          "status":  "not_started",
+                          "created_at":  "2026-07-05T20:42:56.776086",
+                          "updated_at":  "2026-07-05T20:42:56.776086",
+                          "course_id":  1,
+                          "deadline":  "2026-08-15",
+                          "dimensions":  "[]",
+                          "document_url":  null,
+                          "code_standard":  null,
+                          "category_weights":  "{\"document\":0.333,\"ui\":0.333,\"code\":0.333}",
+                          "courseName":  "âæºèâä¼ä¸çº§äººåèµæºç®¡çç³»ç»ï¼HRMSï¼",
+                          "assignedClassIds":  [
+
+                                               ],
+                          "assignedClasses":  [
+                                                  "è½¯ä»¶2401ç­",
+                                                  "è½¯ä»¶2402ç­"
+                                              ],
+                          "submissionCount":  0,
+                          "evaluatedCount":  0,
+                          "avg_score":  0.0,
+                          "studentCount":  0
+                      },
+                      {
+                          "id":  13,
+                          "title":  "Javaå¼åå®è®­ä¸ç­",
+                          "description":  "é¢åJavaåºç¡å­¦åçå\u0085¥é¨çº§å®è®­é¡¹ç®",
+                          "course_name":  "Javaå¼åå®è®­ä¸ç­",
+                          "teacher_name":  "å¼ èå¸",
+                          "expected_steps":  null,
+                          "expected_outcomes":  null,
+                          "status":  "in_progress",
+                          "created_at":  "2026-07-05T20:42:56.770387",
+                          "updated_at":  "2026-07-05T20:42:56.770387",
+                          "course_id":  1,
+                          "deadline":  "2026-08-15",
+                          "dimensions":  "[]",
+                          "document_url":  null,
+                          "code_standard":  null,
+                          "category_weights":  "{\"document\":0.333,\"ui\":0.333,\"code\":0.333}",
+                          "courseName":  "âæºèâä¼ä¸çº§äººåèµæºç®¡çç³»ç»ï¼HRMSï¼",
+                          "assignedClassIds":  [
+
+                                               ],
+                          "assignedClasses":  [
+                                                  "è½¯ä»¶2401ç­",
+                                                  "è½¯ä»¶2402ç­"
+                                              ],
+                          "submissionCount":  0,
+                          "evaluatedCount":  0,
+                          "avg_score":  0.0,
+                          "studentCount":  0
+                      },
+                      {
+                          "id":  5,
+                          "title":  "æµè¯å®è®­é¡¹ç®-1783229766685",
+                          "description":  "",
+                          "course_name":  null,
+                          "teacher_name":  null,
+                          "expected_steps":  null,
+                          "expected_outcomes":  null,
+                          "status":  "archived",
+                          "created_at":  "2026-07-05T13:36:13.090035",
+                          "updated_at":  "2026-07-05T14:54:35.136958",
+                          "course_id":  1,
+                          "deadline":  "2026-07-20",
+                          "dimensions":  "[]",
+                          "document_url":  "",
+                          "code_standard":  "",
+                          "category_weights":  "{\"document\":0.333,\"ui\":0.333,\"code\":0.333}",
+                          "courseName":  "âæºèâä¼ä¸çº§äººåèµæºç®¡çç³»ç»ï¼HRMSï¼",
+                          "assignedClassIds":  [
+                                                   1
+                                               ],
+                          "assignedClasses":  [
+                                                  "è½¯ä»¶2401ç­"
+                                              ],
+                          "submissionCount":  0,
+                          "evaluatedCount":  0,
+                          "avg_score":  0.0,
+                          "studentCount":  20
+                      },
+                      {
+                          "id":  3,
+                          "title":  "æµè¯å®è®­é¡¹ç®2-å·²ä¿®æ¹",
+                          "description":  "è¿æ¯æµè¯2",
+                          "course_name":  null,
+                          "teacher_name":  null,
+                          "expected_steps":  null,
+                          "expected_outcomes":  null,
+                          "status":  "not_started",
+                          "created_at":  "2026-07-05T12:43:58.180655",
+                          "updated_at":  "2026-07-05T12:51:45.443711",
+                          "course_id":  1,
+                          "deadline":  "2026-09-01",
+                          "dimensions":  "[\"ä»£ç è§è\"]",
+                          "document_url":  "/uploads/training_3/test_doc.txt",
+                          "code_standard":  "è§èæ´æ°",
+                          "category_weights":  "{\"document\": 0.3333333333333333, \"ui\": 0.3333333333333333, \"code\": 0.3333333333333333}",
+                          "courseName":  "âæºèâä¼ä¸çº§äººåèµæºç®¡çç³»ç»ï¼HRMSï¼",
+                          "assignedClassIds":  [
+                                                   1,
+                                                   3
+                                               ],
+                          "assignedClasses":  [
+                                                  "è½¯ä»¶2401ç­",
+                                                  "AI2401"
+                                              ],
+                          "submissionCount":  3,
+                          "evaluatedCount":  2,
+                          "avg_score":  81.7,
+                          "studentCount":  40
+                      }
+                  ]
+}
