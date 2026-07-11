@@ -3372,7 +3372,7 @@ select.form-control {
 }
 
 .course-card-cover {
-    height: 140px;
+    height: 100px;
     position: relative;
     overflow: hidden;
 }
