@@ -1,0 +1,210 @@
+{"id":"1-1-1","content":"所有头文件都必须使用#define 防止头文件被多重包含。","metadata":{"chapter":"一、头文件","section":"1. #define 的保护","knowledge_point":"头文件保护的总体要求"}}
+{"id":"1-1-2","content":"头文件保护宏的命名格式为：<PROJECT>_<PATH>_<FILE>_H_，命名应基于其所在项目源代码树的全路径，保证唯一性。","metadata":{"chapter":"一、头文件","section":"1. #define 的保护","knowledge_point":"头文件保护宏的命名规范"}}
+{"id":"1-1-3","content":"头文件保护代码示例：项目foo中的头文件foo/src/bar/baz.h按如下方式保护：\n#ifndef FOO_BAR_BAZ_H_\n#define FOO_BAR_BAZ_H_\n#endif // FOO_BAR_BAZ_H_","metadata":{"chapter":"一、头文件","section":"1. #define 的保护","knowledge_point":"头文件保护的代码示例"}}
+{"id":"1-2-1","content":"头文件依赖的核心原则：使用前置声明尽量减少.h文件中#include的数量，降低编译依赖。","metadata":{"chapter":"一、头文件","section":"2. 头文件依赖","knowledge_point":"头文件依赖的优化原则"}}
+{"id":"1-2-2","content":"头文件包含的连锁影响：只要被包含的头文件发生修改，所有包含它的代码都要重新编译，因此应尽量减少头文件嵌套包含。","metadata":{"chapter":"一、头文件","section":"2. 头文件依赖","knowledge_point":"头文件包含的编译影响"}}
+{"id":"1-2-3","content":"可以使用前置声明、无需包含对应头文件的场景：1) 数据成员类型声明为Foo *或Foo &；2) 函数参数、返回值类型为Foo且仅做声明；3) 静态数据成员类型声明为Foo。","metadata":{"chapter":"一、头文件","section":"2. 头文件依赖","knowledge_point":"前置声明的适用场景"}}
+{"id":"1-2-4","content":"必须包含对应头文件的场景：类是Foo的子类，或者类中含有类型为Foo的非静态数据成员。","metadata":{"chapter":"一、头文件","section":"2. 头文件依赖","knowledge_point":"必须包含头文件的场景"}}
+{"id":"1-2-5","content":"不建议为了减少头文件包含，滥用指针成员替代对象成员，这会降低代码可读性和执行效率。","metadata":{"chapter":"一、头文件","section":"2. 头文件依赖","knowledge_point":"避免为减依赖滥用指针成员"}}
+{"id":"1-3-1","content":"内联函数的适用阈值：只有当函数只有10行甚至更少时，才将其定义为内联函数。","metadata":{"chapter":"一、头文件","section":"3. 内联函数","knowledge_point":"内联函数的行数限制"}}
+{"id":"1-3-2","content":"内联函数的定义与作用：编译器可能将内联函数在调用处展开，无需走常规函数调用机制，可提升短小函数的执行效率。","metadata":{"chapter":"一、头文件","section":"3. 内联函数","knowledge_point":"内联函数的定义与优势"}}
+{"id":"1-3-3","content":"内联函数的风险：滥用内联会导致程序变慢，内联大函数会显著增加代码量，现代处理器下小巧代码更易利用指令缓存，执行更快。","metadata":{"chapter":"一、头文件","section":"3. 内联函数","knowledge_point":"内联函数滥用的弊端"}}
+{"id":"1-3-4","content":"内联函数的禁忌：包含循环或switch语句的函数通常不建议内联；虚函数和递归函数即使声明为inline，也不一定会被内联；递归函数不应声明为内联。","metadata":{"chapter":"一、头文件","section":"3. 内联函数","knowledge_point":"不适合内联的函数类型"}}
+{"id":"1-3-5","content":"析构函数内联需谨慎：析构函数通常比表面更长，会隐含调用成员和基类的析构函数。","metadata":{"chapter":"一、头文件","section":"3. 内联函数","knowledge_point":"析构函数内联注意事项"}}
+{"id":"1-4-1","content":"-inl.h文件的用途：用于存放复杂内联函数的定义，实现类定义与内联实现的分离，也可用于函数模板定义以提升可读性。","metadata":{"chapter":"一、头文件","section":"4. -inl.h 文件","knowledge_point":"-inl.h文件的作用"}}
+{"id":"1-4-2","content":"内联代码的放置原则：短小、逻辑简单的内联函数可直接放在.h文件的类定义中；复杂内联函数可分离到独立的-inl.h文件中。","metadata":{"chapter":"一、头文件","section":"4. -inl.h 文件","knowledge_point":"内联代码的放置规则"}}
+{"id":"1-4-3","content":"-inl.h文件和普通头文件一样，必须使用#define头文件保护。","metadata":{"chapter":"一、头文件","section":"4. -inl.h 文件","knowledge_point":"-inl.h文件的保护要求"}}
+{"id":"1-5-1","content":"函数参数排序规则：输入参数在前，输出参数在后，新增参数也需遵循该顺序，不能直接追加到末尾。","metadata":{"chapter":"一、头文件","section":"5. 函数参数顺序","knowledge_point":"函数参数的排序总规则"}}
+{"id":"1-5-2","content":"参数形式约定：输入参数一般传值或const引用，输出/输入输出参数为非常数指针。","metadata":{"chapter":"一、头文件","section":"5. 函数参数顺序","knowledge_point":"输入输出参数的形式差异"}}
+{"id":"1-5-3","content":"参数排序规则的例外：输入/输出两用的类/结构体变量，会让规则难以严格遵循，属于非强制规则。","metadata":{"chapter":"一、头文件","section":"5. 函数参数顺序","knowledge_point":"参数排序的例外情况"}}
+{"id":"1-6-1","content":"头文件包含的标准次序：C系统文件 → C++系统文件 → 其他库头文件 → 本项目内头文件，可增强可读性、避免隐藏依赖。","metadata":{"chapter":"一、头文件","section":"6. 包含文件的名称及次序","knowledge_point":"头文件包含的总体次序"}}
+{"id":"1-6-2","content":"项目内头文件路径规范：按项目源代码目录树结构排列，禁止使用.（当前目录）和..（父目录）的相对路径写法。","metadata":{"chapter":"一、头文件","section":"6. 包含文件的名称及次序","knowledge_point":"项目内头文件的路径规范"}}
+{"id":"1-6-3","content":"对应.cc文件应优先包含对应的.h文件，这样可确保头文件能够独立编译，有效减少隐藏依赖。","metadata":{"chapter":"一、头文件","section":"6. 包含文件的名称及次序","knowledge_point":"对应源文件的优先包含原则"}}
+{"id":"1-6-4","content":"相同目录下的头文件，按字母顺序排列包含是推荐做法。","metadata":{"chapter":"一、头文件","section":"6. 包含文件的名称及次序","knowledge_point":"同目录头文件的排序方式"}}
+{"id":"2-1-1","content":"命名空间的作用：将全局作用域细分为不同具名作用域，有效防止全局命名冲突，提供可嵌套的命名轴线。","metadata":{"chapter":"二、作用域","section":"1. 命名空间","knowledge_point":"命名空间的作用与优点"}}
+{"id":"2-1-2","content":"命名空间的缺点：会增加命名层级的迷惑性；头文件中使用不具名命名空间会违背C++唯一定义原则(ODR)。","metadata":{"chapter":"二、作用域","section":"1. 命名空间","knowledge_point":"命名空间的缺点与风险"}}
+{"id":"2-1-3","content":"不具名命名空间规则：允许且提倡在.cc文件中使用，用于避免运行时命名冲突；禁止在.h文件中使用。","metadata":{"chapter":"二、作用域","section":"1. 命名空间","knowledge_point":"不具名命名空间的使用规则"}}
+{"id":"2-1-4","content":"具名命名空间规范：名称基于项目或路径命名；将除文件包含、全局声明、类前置声明外的代码全部封装进命名空间。","metadata":{"chapter":"二、作用域","section":"1. 命名空间","knowledge_point":"具名命名空间的使用规范"}}
+{"id":"2-1-5","content":"禁止在std命名空间下声明任何内容，包括标准库类的前置声明，否则会导致不可移植等未定义行为。","metadata":{"chapter":"二、作用域","section":"1. 命名空间","knowledge_point":"std命名空间的使用禁令"}}
+{"id":"2-1-6","content":"禁止使用using namespace 指示符，避免污染整个命名空间。","metadata":{"chapter":"二、作用域","section":"1. 命名空间","knowledge_point":"禁止using namespace指示符"}}
+{"id":"2-1-7","content":"允许使用using声明的场景：.cc文件中；.h文件的函数、方法或类内部。","metadata":{"chapter":"二、作用域","section":"1. 命名空间","knowledge_point":"using声明的合法场景"}}
+{"id":"2-1-8","content":"允许使用命名空间别名的场景：.cc文件中；.h文件的函数、方法或类内部。","metadata":{"chapter":"二、作用域","section":"1. 命名空间","knowledge_point":"命名空间别名的合法场景"}}
+{"id":"2-2-1","content":"嵌套类的优点：仅在被嵌套类内部使用时，不会污染外部作用域；可在类内前置声明、.cc中定义，隐藏实现细节。","metadata":{"chapter":"二、作用域","section":"2. 嵌套类","knowledge_point":"嵌套类的优势"}}
+{"id":"2-2-2","content":"嵌套类的缺点：只能在被嵌套类定义内前置声明，外部使用Foo::Bar*指针时必须包含整个Foo类的声明。","metadata":{"chapter":"二、作用域","section":"2. 嵌套类","knowledge_point":"嵌套类的局限性"}}
+{"id":"2-2-3","content":"嵌套类的使用原则：不要将嵌套类定义为public，除非它是接口的一部分。","metadata":{"chapter":"二、作用域","section":"2. 嵌套类","knowledge_point":"嵌套类的访问控制原则"}}
+{"id":"2-3-1","content":"函数层级选择原则：优先使用命名空间中的非成员函数或类静态成员函数，尽量避免使用全局函数。","metadata":{"chapter":"二、作用域","section":"3. 非成员函数、静态成员函数和全局函数","knowledge_point":"函数作用域的选择优先级"}}
+{"id":"2-3-2","content":"非成员函数设计原则：不应依赖外部变量，尽量置于某个命名空间中；相比只为封装静态函数创建类，更推荐使用命名空间。","metadata":{"chapter":"二、作用域","section":"3. 非成员函数、静态成员函数和全局函数","knowledge_point":"非成员函数的设计原则"}}
+{"id":"2-3-3","content":"仅在.cc文件内使用的非成员函数，应使用不具名命名空间或static关键字限定作用域，避免跨编译单元耦合。","metadata":{"chapter":"二、作用域","section":"3. 非成员函数、静态成员函数和全局函数","knowledge_point":"文件内函数的作用域限制"}}
+{"id":"2-4-1","content":"局部变量声明原则：尽可能置于最小作用域内，离第一次使用越近越好，提升代码可读性。","metadata":{"chapter":"二、作用域","section":"4. 局部变量","knowledge_point":"局部变量的作用域原则"}}
+{"id":"2-4-2","content":"变量初始化原则：声明变量时直接初始化，替代「先声明再赋值」的写法。","metadata":{"chapter":"二、作用域","section":"4. 局部变量","knowledge_point":"变量初始化的最佳实践"}}
+{"id":"2-4-3","content":"循环内对象声明的性能注意：循环内声明类对象会导致每次循环都调用构造和析构，高频循环下应将对象移到循环外。","metadata":{"chapter":"二、作用域","section":"4. 局部变量","knowledge_point":"循环内对象声明的性能优化"}}
+{"id":"2-5-1","content":"全局变量禁令：禁止class类型的全局变量（含STL容器、string等）；多线程代码中禁止非常数全局变量；禁止用函数返回值初始化全局变量。","metadata":{"chapter":"二、作用域","section":"5. 全局变量","knowledge_point":"全局变量的禁止项"}}
+{"id":"2-5-2","content":"禁止class类型全局变量的原因：全局变量构造/析构/初始化顺序仅部分规定，存在不确定性，易引发难以排查的bug。","metadata":{"chapter":"二、作用域","section":"5. 全局变量","knowledge_point":"禁止class全局变量的原因"}}
+{"id":"2-5-3","content":"class类型全局变量的替代方案：使用单件模式(singleton pattern)。","metadata":{"chapter":"二、作用域","section":"5. 全局变量","knowledge_point":"class全局变量的替代方案"}}
+{"id":"2-5-4","content":"全局字符串常量规范：使用C风格字符串，不使用STL的string类型。","metadata":{"chapter":"二、作用域","section":"5. 全局变量","knowledge_point":"全局字符串常量的要求"}}
+{"id":"2-5-5","content":"全局变量的作用域优化：大多数全局变量应改为类静态数据成员，或定义在.cc的不具名命名空间，或用static限定作用域。","metadata":{"chapter":"二、作用域","section":"5. 全局变量","knowledge_point":"全局变量的作用域限制建议"}}
+{"id":"2-5-6","content":"类静态成员变量视同全局变量，同样不允许是class类型。","metadata":{"chapter":"二、作用域","section":"5. 全局变量","knowledge_point":"静态成员变量的等同规则"}}
+{"id":"3-1-1","content":"构造函数的职责限制：仅做无实际逻辑意义的简单初始化，复杂初始化应使用Init()方法集中处理。","metadata":{"chapter":"三、类","section":"1. 构造函数的职责","knowledge_point":"构造函数的职责边界"}}
+{"id":"3-1-2","content":"构造函数中做复杂逻辑的问题：无法报告错误、不能抛异常；操作失败会导致对象处于不确定状态；调用虚函数不会派发到子类实现；全局对象的构造函数在main前执行，可能破坏前置假设。","metadata":{"chapter":"三、类","section":"1. 构造函数的职责","knowledge_point":"构造函数做复杂逻辑的风险"}}
+{"id":"3-2-1","content":"需要自定义默认构造函数的场景：类定义了成员变量，且没有提供其他构造函数时，必须定义默认构造函数。","metadata":{"chapter":"三、类","section":"2. 默认构造函数","knowledge_point":"默认构造函数的必填场景"}}
+{"id":"3-2-2","content":"编译器自动生成的默认构造函数不会对成员变量进行初始化。","metadata":{"chapter":"三、类","section":"2. 默认构造函数","knowledge_point":"编译器默认构造函数的特点"}}
+{"id":"3-2-3","content":"不需要自定义默认构造函数的场景：子类继承现有类且没有新增成员变量时。","metadata":{"chapter":"三、类","section":"2. 默认构造函数","knowledge_point":"无需默认构造函数的场景"}}
+{"id":"3-3-1","content":"单参数构造函数的隐式转换风险：单参数构造函数会被用于隐式类型转换，可能生成意料之外的临时对象。","metadata":{"chapter":"三、类","section":"3. 明确的构造函数","knowledge_point":"单参数构造函数的隐式转换问题"}}
+{"id":"3-3-2","content":"explicit关键字规则：所有单参数构造函数必须声明为explicit，避免隐式转换。","metadata":{"chapter":"三、类","section":"3. 明确的构造函数","knowledge_point":"explicit关键字的强制要求"}}
+{"id":"3-3-3","content":"explicit规则的例外：拷贝构造函数在少数情况下可不声明；特意作为其他类透明包装器的类可例外，例外需注释说明。","metadata":{"chapter":"三、类","section":"3. 明确的构造函数","knowledge_point":"explicit规则的例外情况"}}
+{"id":"3-4-1","content":"隐式拷贝的问题：C++对象的隐式拷贝是很多性能问题和bug的根源，会降低代码可读性，难以跟踪对象修改位置。","metadata":{"chapter":"三、类","section":"4. 拷贝构造函数","knowledge_point":"隐式拷贝的弊端"}}
+{"id":"3-4-2","content":"禁止拷贝的实现方式：在类private区声明拷贝构造函数和赋值运算符但不实现，可使用DISALLOW_COPY_AND_ASSIGN宏简化。","metadata":{"chapter":"三、类","section":"4. 拷贝构造函数","knowledge_point":"禁止拷贝的标准实现"}}
+{"id":"3-4-3","content":"类确实需要可拷贝时，应在头文件中说明理由，并正确定义拷贝构造函数和赋值操作，赋值操作需检测自赋值。","metadata":{"chapter":"三、类","section":"4. 拷贝构造函数","knowledge_point":"可拷贝类的实现要求"}}
+{"id":"3-4-4","content":"STL容器存放自定义类的推荐方案：使用指针指向容器中的对象，可考虑std::tr1::shared_ptr，而非强制让类支持拷贝。","metadata":{"chapter":"三、类","section":"4. 拷贝构造函数","knowledge_point":"STL容器存放对象的推荐方案"}}
+{"id":"3-5-1","content":"struct的适用场景：仅包含数据的被动对象，可含关联常量，仅提供数据存取相关的简单方法（如构造、Reset、Validate等）。","metadata":{"chapter":"三、类","section":"5. 结构体和类","knowledge_point":"struct的适用场景"}}
+{"id":"3-5-2","content":"class的适用场景：需要提供更多函数功能时使用class；不确定时直接用class。","metadata":{"chapter":"三、类","section":"5. 结构体和类","knowledge_point":"class的适用场景"}}
+{"id":"3-5-3","content":"例外场景：STL仿函数(functors)和特性(traits)可以使用struct而非class。","metadata":{"chapter":"三、类","section":"5. 结构体和类","knowledge_point":"struct使用的例外场景"}}
+{"id":"3-6-1","content":"继承设计总原则：优先使用组合(composition)，仅在必要时使用继承；继承必须为public继承。","metadata":{"chapter":"三、类","section":"6. 继承","knowledge_point":"继承的总体设计原则"}}
+{"id":"3-6-2","content":"继承的使用判断标准：仅当满足「is-a」关系，即子类的确是父类的一种时，才使用继承；「has-a」关系应使用组合。","metadata":{"chapter":"三、类","section":"6. 继承","knowledge_point":"is-a继承判断原则"}}
+{"id":"3-6-3","content":"含虚函数的类，其析构函数必须声明为virtual。","metadata":{"chapter":"三、类","section":"6. 继承","knowledge_point":"虚析构函数的强制要求"}}
+{"id":"3-6-4","content":"类成员访问规则：数据成员始终为私有；仅允许子类访问的成员函数声明为protected。","metadata":{"chapter":"三、类","section":"6. 继承","knowledge_point":"类成员的访问控制规则"}}
+{"id":"3-6-5","content":"派生类重写虚函数时，应显式声明virtual关键字，提升代码可读性。","metadata":{"chapter":"三、类","section":"6. 继承","knowledge_point":"派生类虚函数的显式声明要求"}}
+{"id":"3-7-1","content":"多重继承的严格限制：最多一个基类含有实现，其余基类必须是纯接口类。","metadata":{"chapter":"三、类","section":"7. 多重继承","knowledge_point":"多重继承的使用限制"}}
+{"id":"3-7-2","content":"纯接口基类的命名要求：必须以Interface为后缀。","metadata":{"chapter":"三、类","section":"7. 多重继承","knowledge_point":"接口基类的命名要求"}}
+{"id":"3-7-3","content":"多重继承规则的Windows平台例外：COM和ATL/WTL相关代码可放宽。","metadata":{"chapter":"三、类","section":"7. 多重继承","knowledge_point":"多重继承的Windows例外"}}
+{"id":"3-8-1","content":"纯接口类的定义要求：1) 只有纯虚函数和静态函数；2) 无非静态数据成员；3) 无构造函数，或仅有无参protected构造函数；4) 只能继承纯接口类。","metadata":{"chapter":"三、类","section":"8. 接口","knowledge_point":"纯接口类的定义标准"}}
+{"id":"3-8-2","content":"接口类必须声明虚析构函数，确保所有实现类能被正确销毁，析构函数不能是纯虚函数。","metadata":{"chapter":"三、类","section":"8. 接口","knowledge_point":"接口类的虚析构函数要求"}}
+{"id":"3-9-1","content":"操作符重载的总体原则：除少数特定环境外，不要重载操作符，尤其避免重载赋值运算符。","metadata":{"chapter":"三、类","section":"9. 操作符重载","knowledge_point":"操作符重载的总原则"}}
+{"id":"3-9-2","content":"操作符重载的弊端：混淆直觉、掩盖操作开销；调用点难以查找；指针操作易引发bug；存在副作用（如重载&的类无法前置声明）。","metadata":{"chapter":"三、类","section":"9. 操作符重载","knowledge_point":"操作符重载的缺点"}}
+{"id":"3-9-3","content":"操作符重载的允许场景：极少数为适配模板或标准库的场景（如operator<<用于日志），需充分说明理由。","metadata":{"chapter":"三、类","section":"9. 操作符重载","knowledge_point":"操作符重载的允许场景"}}
+{"id":"3-9-4","content":"STL容器作为key的比较实现：不要重载operator==/operator<，应在声明容器时自定义比较仿函数类。","metadata":{"chapter":"三、类","section":"9. 操作符重载","knowledge_point":"STL容器key的比较实现方式"}}
+{"id":"3-10-1","content":"存取控制规则：所有数据成员必须私有化，通过存取函数访问，存取函数一般内联在头文件中。","metadata":{"chapter":"三、类","section":"10. 存取控制","knowledge_point":"数据成员私有化要求"}}
+{"id":"3-11-1","content":"类内访问块的声明顺序：public → protected → private，无对应块则直接忽略。","metadata":{"chapter":"三、类","section":"11. 声明次序","knowledge_point":"访问控制块的顺序"}}
+{"id":"3-11-2","content":"每个访问块内的声明次序：typedefs和enums → 常量 → 构造函数 → 析构函数 → 成员函数（含静态） → 数据成员（含静态）。","metadata":{"chapter":"三、类","section":"11. 声明次序","knowledge_point":"块内成员的声明顺序"}}
+{"id":"3-11-3","content":"DISALLOW_COPY_AND_ASSIGN宏应放在private块的末尾，作为类的最后部分。","metadata":{"chapter":"三、类","section":"11. 声明次序","knowledge_point":"禁止拷贝宏的放置位置"}}
+{"id":"3-12-1","content":"函数长度建议：倾向编写短小凝练的函数，超过40行可考虑在不破坏结构的前提下拆分。","metadata":{"chapter":"三、类","section":"12. 编写短小函数","knowledge_point":"函数长度的推荐阈值"}}
+{"id":"3-12-2","content":"短小函数的优势：便于他人阅读修改，降低修改引入bug的风险。","metadata":{"chapter":"三、类","section":"12. 编写短小函数","knowledge_point":"短小函数的优势"}}
+{"id":"4-1-1","content":"智能指针选型规则：常规场景使用scoped_ptr；STL容器存对象等特殊场景使用std::tr1::shared_ptr；任何情况下禁止使用auto_ptr。","metadata":{"chapter":"四、Google特有的风情","section":"1. 智能指针","knowledge_point":"智能指针的选型规则"}}
+{"id":"4-1-2","content":"智能指针设计理念：优先设计对象隶属关系明确的代码，最理想的是不使用指针，直接用栈对象或成员变量。","metadata":{"chapter":"四、Google特有的风情","section":"1. 智能指针","knowledge_point":"指针使用的设计理念"}}
+{"id":"4-1-3","content":"引用计数指针的缺点：易出现循环引用等导致对象无法释放的问题；拷贝和赋值时有原子操作开销，性能较慢。","metadata":{"chapter":"四、Google特有的风情","section":"1. 智能指针","knowledge_point":"引用计数指针的弊端"}}
+{"id":"5-1-1","content":"引用参数硬性规则：函数形参表中，所有引用必须是const引用。","metadata":{"chapter":"五、其他C++特性","section":"1. 引用参数","knowledge_point":"引用参数的const强制要求"}}
+{"id":"5-1-2","content":"参数形式约定：输入参数用值或const引用，输出参数用指针；不允许使用非常数引用作为输出形参。","metadata":{"chapter":"五、其他C++特性","section":"1. 引用参数","knowledge_point":"输入输出参数的形式约定"}}
+{"id":"5-1-3","content":"STL适配器（如bind2nd、mem_fun）不接受引用形参，这类场景必须声明为指针形参。","metadata":{"chapter":"五、其他C++特性","section":"1. 引用参数","knowledge_point":"STL适配器的参数形式限制"}}
+{"id":"5-2-1","content":"函数重载的适用场景：仅在输入参数类型不同、功能完全相同时使用重载。","metadata":{"chapter":"五、其他C++特性","section":"2. 函数重载","knowledge_point":"函数重载的适用场景"}}
+{"id":"5-2-2","content":"函数重载的弊端：调用点难以确定具体调用哪个函数；派生类仅重载部分函数易引发语义困惑。","metadata":{"chapter":"五、其他C++特性","section":"2. 函数重载","knowledge_point":"函数重载的缺点"}}
+{"id":"5-2-3","content":"禁止用函数重载模拟缺省参数效果，建议函数名包含参数信息（如AppendString、AppendInt）替代重载。","metadata":{"chapter":"五、其他C++特性","section":"2. 函数重载","knowledge_point":"重载的替代方案"}}
+{"id":"5-3-1","content":"禁止使用缺省函数参数。","metadata":{"chapter":"五、其他C++特性","section":"3. 缺省参数","knowledge_point":"缺省参数的禁令"}}
+{"id":"5-3-2","content":"禁止缺省参数的原因：易隐藏参数细节，复制旧代码时难以呈现全部参数，缺省值不适配新代码时会引发严重问题。","metadata":{"chapter":"五、其他C++特性","section":"3. 缺省参数","knowledge_point":"禁止缺省参数的原因"}}
+{"id":"5-4-1","content":"禁止使用变长数组和alloca()。","metadata":{"chapter":"五、其他C++特性","section":"4. 变长数组和alloca","knowledge_point":"变长数组与alloca的禁令"}}
+{"id":"5-4-2","content":"禁止的原因：二者不属于标准C++；在栈上动态分配大小易引发栈溢出等难以排查的内存问题。","metadata":{"chapter":"五、其他C++特性","section":"4. 变长数组和alloca","knowledge_point":"禁止变长数组与alloca的原因"}}
+{"id":"5-4-3","content":"替代方案：使用安全的内存分配器，如scoped_ptr/scoped_array。","metadata":{"chapter":"五、其他C++特性","section":"4. 变长数组和alloca","knowledge_point":"变长数组的替代方案"}}
+{"id":"5-5-1","content":"友元的使用原则：允许合理使用友元类和友元函数，通常定义在同一文件下。","metadata":{"chapter":"五、其他C++特性","section":"5. 友元","knowledge_point":"友元的使用总原则"}}
+{"id":"5-5-2","content":"友元的典型适用场景：Builder类构造目标类内部状态；单元测试类声明为待测类友元。","metadata":{"chapter":"五、其他C++特性","section":"5. 友元","knowledge_point":"友元的典型适用场景"}}
+{"id":"5-5-3","content":"友元的本质：延伸而非打破类的封装边界，比直接将成员设为public更优。","metadata":{"chapter":"五、其他C++特性","section":"5. 友元","knowledge_point":"友元的封装意义"}}
+{"id":"5-6-1","content":"Google C++规范总原则：不使用C++异常。","metadata":{"chapter":"五、其他C++特性","section":"6. 异常","knowledge_point":"异常的总体禁令"}}
+{"id":"5-6-2","content":"使用异常的优点：上层可统一处理底层错误；与现代语言兼容；适配第三方库；是构造函数失败的标准解决方案；测试框架中易用。","metadata":{"chapter":"五、其他C++特性","section":"6. 异常","knowledge_point":"异常的潜在优势"}}
+{"id":"5-6-3","content":"使用异常的弊端：控制流不直观、调试困难；需要RAII等异常安全实践支撑；增大二进制体积、延长编译时间；易被滥用在不该抛异常的场景。","metadata":{"chapter":"五、其他C++特性","section":"6. 异常","knowledge_point":"异常的弊端"}}
+{"id":"5-6-4","content":"禁止异常的实际原因：Google现有大量代码均未使用异常，引入异常的迁移成本高、兼容风险大，并非基于哲学层面反对。","metadata":{"chapter":"五、其他C++特性","section":"6. 异常","knowledge_point":"禁止异常的核心原因"}}
+{"id":"5-6-5","content":"异常规则的Windows平台例外：ATL和部分STL广泛使用异常，编译时可开启异常支持，但业务代码仍不应主动写异常处理。","metadata":{"chapter":"五、其他C++特性","section":"6. 异常","knowledge_point":"异常规则的Windows例外"}}
+{"id":"5-7-1","content":"RTTI使用规则：除单元测试外，禁止使用运行时类型识别(RTTI)。","metadata":{"chapter":"五、其他C++特性","section":"7. 运行时类型识别(RTTI)","knowledge_point":"RTTI的使用禁令"}}
+{"id":"5-7-2","content":"反对RTTI的核心理由：运行时需要判断对象类型，通常说明类设计本身存在缺陷。","metadata":{"chapter":"五、其他C++特性","section":"7. 运行时类型识别(RTTI)","knowledge_point":"反对RTTI的设计逻辑"}}
+{"id":"5-7-3","content":"RTTI的替代方案：用虚函数让对象自身执行差异化逻辑；用Visitor模式在对象外实现双重分发。","metadata":{"chapter":"五、其他C++特性","section":"7. 运行时类型识别(RTTI)","knowledge_point":"RTTI的替代方案"}}
+{"id":"5-7-4","content":"禁止手工实现类似RTTI的类型标签方案，反对RTTI也反对造轮子式的替代实现。","metadata":{"chapter":"五、其他C++特性","section":"7. 运行时类型识别(RTTI)","knowledge_point":"禁止手工实现RTTI替代方案"}}
+{"id":"5-8-1","content":"类型转换总原则：使用C++风格的类型转换，禁止使用C风格强制转换。","metadata":{"chapter":"五、其他C++特性","section":"8. 类型转换","knowledge_point":"类型转换的风格总原则"}}
+{"id":"5-8-2","content":"static_cast：用于值的强制转换，或指针从父类到子类的明确向上转换。","metadata":{"chapter":"五、其他C++特性","section":"8. 类型转换","knowledge_point":"static_cast的适用场景"}}
+{"id":"5-8-3","content":"const_cast：用于移除const属性。","metadata":{"chapter":"五、其他C++特性","section":"8. 类型转换","knowledge_point":"const_cast的适用场景"}}
+{"id":"5-8-4","content":"reinterpret_cast：用于指针与整型、不同指针类型间的不安全转换，仅在完全清楚后果时使用。","metadata":{"chapter":"五、其他C++特性","section":"8. 类型转换","knowledge_point":"reinterpret_cast的使用限制"}}
+{"id":"5-8-5","content":"dynamic_cast：除单元测试外不要使用，运行时判断类型通常意味着设计缺陷。","metadata":{"chapter":"五、其他C++特性","section":"8. 类型转换","knowledge_point":"dynamic_cast的使用限制"}}
+{"id":"5-9-1","content":"流(streams)的使用限制：只在记录日志时使用流，常规I/O使用printf等替代。","metadata":{"chapter":"五、其他C++特性","section":"9. 流","knowledge_point":"流的使用范围限制"}}
+{"id":"5-9-2","content":"流的缺点：难以执行pread等系统调用；格式化操作不便；不支持字符串重排序，不利于国际化。","metadata":{"chapter":"五、其他C++特性","section":"9. 流","knowledge_point":"流的弊端"}}
+{"id":"5-9-3","content":"I/O方式统一原则：项目内只使用一种确定的I/O方式，保持代码一致性，最终选择printf + read/write作为标准。","metadata":{"chapter":"五、其他C++特性","section":"9. 流","knowledge_point":"I/O方式的统一原则"}}
+{"id":"5-10-1","content":"自增自减使用原则：对迭代器和模板对象，优先使用前缀形式(++i/--i)。","metadata":{"chapter":"五、其他C++特性","section":"10. 前置自增和自减","knowledge_point":"迭代器的自增自减规范"}}
+{"id":"5-10-2","content":"前置自增的性能优势：无需拷贝表达式原值，非数值类型的拷贝开销较大，前置效率更高。","metadata":{"chapter":"五、其他C++特性","section":"10. 前置自增和自减","knowledge_point":"前置自增的性能优势"}}
+{"id":"5-10-3","content":"简单内置数值类型，前置和后置自增无明显差异。","metadata":{"chapter":"五、其他C++特性","section":"10. 前置自增和自减","knowledge_point":"简单类型的无差异性"}}
+{"id":"5-11-1","content":"const使用总原则：强烈建议在所有可以使用的场景都使用const。","metadata":{"chapter":"五、其他C++特性","section":"11. const 的使用","knowledge_point":"const使用总原则"}}
+{"id":"5-11-2","content":"const的核心价值：增加编译时类型检查，尽早发现错误；提升代码可读性，明确变量/函数是否修改状态；多线程下便于判断函数安全性。","metadata":{"chapter":"五、其他C++特性","section":"11. const 的使用","knowledge_point":"使用const的优势"}}
+{"id":"5-11-3","content":"const的主要使用场景：1) 不修改的引用/指针参数加const；2) 不修改成员的函数声明为const；3) 构造后不再改变的数据成员定义为const。","metadata":{"chapter":"五、其他C++特性","section":"11. const 的使用","knowledge_point":"const的主要应用场景"}}
+{"id":"5-11-4","content":"避免过度使用const，无需追求极致精确的多层const修饰。","metadata":{"chapter":"五、其他C++特性","section":"11. const 的使用","knowledge_point":"避免过度使用const"}}
+{"id":"5-11-5","content":"mutable关键字可以使用，但多线程场景下需注意线程安全。","metadata":{"chapter":"五、其他C++特性","section":"11. const 的使用","knowledge_point":"mutable的使用注意"}}
+{"id":"5-11-6","content":"const位置规范：提倡将const放在类型前面（const int），符合自然语言语序，保持项目内一致即可。","metadata":{"chapter":"五、其他C++特性","section":"11. const 的使用","knowledge_point":"const的位置规范"}}
+{"id":"5-12-1","content":"内建整型使用规则：C++内建整型中只使用int；需要确定大小的整型时，使用<stdint.h>中的精确宽度类型。","metadata":{"chapter":"五、其他C++特性","section":"12. 整型","knowledge_point":"整型使用总规则"}}
+{"id":"5-12-2","content":"大整数处理：需要64位整型时使用int64_t或uint64_t。","metadata":{"chapter":"五、其他C++特性","section":"12. 整型","knowledge_point":"大整数类型选择"}}
+{"id":"5-12-3","content":"无符号整型使用原则：尽量不要使用无符号整型表示数值，除非是表示位组(bit pattern)。","metadata":{"chapter":"五、其他C++特性","section":"12. 整型","knowledge_point":"无符号整型的使用限制"}}
+{"id":"5-12-4","content":"无符号整型的风险：C语言类型提升机制会导致意外行为，典型问题是无符号变量的倒序循环永远不会终止。","metadata":{"chapter":"五、其他C++特性","section":"12. 整型","knowledge_point":"无符号整型的典型风险"}}
+{"id":"5-12-5","content":"非负数值的校验方式：使用断言(assertion)保证数值非负，而非依赖无符号类型。","metadata":{"chapter":"五、其他C++特性","section":"12. 整型","knowledge_point":"非负数值的校验方案"}}
+{"id":"5-13-1","content":"printf可移植格式：使用inttypes.h中的PRI*宏保证32/64位系统下格式一致，替代%lld、%qu等不可移植写法。","metadata":{"chapter":"五、其他C++特性","section":"13. 64位下的可移植性","knowledge_point":"printf格式的可移植方案"}}
+{"id":"5-13-2","content":"指针与整数大小规则：sizeof(void*) != sizeof(int)，需要指针大小的整数时使用intptr_t。","metadata":{"chapter":"五、其他C++特性","section":"13. 64位下的可移植性","knowledge_point":"指针大小整数的类型选择"}}
+{"id":"5-13-3","content":"结构体对齐跨平台注意：64位系统下含int64_t/uint64_t的结构体默认8字节对齐，跨架构共用磁盘结构体时需手动对齐。","metadata":{"chapter":"五、其他C++特性","section":"13. 64位下的可移植性","knowledge_point":"结构体对齐的跨平台注意事项"}}
+{"id":"5-13-4","content":"64位常量书写规则：创建64位常量时使用LL或ULL后缀。","metadata":{"chapter":"五、其他C++特性","section":"13. 64位下的可移植性","knowledge_point":"64位常量的后缀规范"}}
+{"id":"5-14-1","content":"宏使用总原则：谨慎使用宏，尽量以内联函数、枚举、const常量替代。","metadata":{"chapter":"五、其他C++特性","section":"14. 预处理宏","knowledge_point":"宏使用总原则"}}
+{"id":"5-14-2","content":"宏的风险：宏展开后代码与视觉所见不同，易引发异常行为；全局作用域的宏影响范围不可控。","metadata":{"chapter":"五、其他C++特性","section":"14. 预处理宏","knowledge_point":"宏的潜在风险"}}
+{"id":"5-14-3","content":"宏的使用规范：1) 不在.h文件中定义宏；2) 使用前#define、使用后#undef；3) 不与已有宏重名；4) 不使用会破坏C++结构的宏。","metadata":{"chapter":"五、其他C++特性","section":"14. 预处理宏","knowledge_point":"宏的使用规范"}}
+{"id":"5-14-4","content":"头文件保护宏是规则例外，属于推荐用法。","metadata":{"chapter":"五、其他C++特性","section":"14. 预处理宏","knowledge_point":"头文件保护宏的例外地位"}}
+{"id":"5-15-1","content":"零值使用规范：整数用0，实数用0.0，指针用NULL，字符/字符串用'\0'。","metadata":{"chapter":"五、其他C++特性","section":"15. 0 和NULL","knowledge_point":"不同类型的零值规范"}}
+{"id":"5-15-2","content":"指针推荐使用NULL而非0，部分编译器可基于NULL提供额外警告。","metadata":{"chapter":"五、其他C++特性","section":"15. 0 和NULL","knowledge_point":"指针零值的推荐写法"}}
+{"id":"5-16-1","content":"sizeof使用原则：优先使用sizeof(变量名)，而非sizeof(类型)。","metadata":{"chapter":"五、其他C++特性","section":"16. sizeof","knowledge_point":"sizeof的使用原则"}}
+{"id":"5-16-2","content":"使用变量名的好处：变量类型变更时，代码可自动同步，无需手动修改sizeof参数。","metadata":{"chapter":"五、其他C++特性","section":"16. sizeof","knowledge_point":"sizeof变量名的优势"}}
+{"id":"5-17-1","content":"Boost库使用总原则：只使用Boost中被官方认可的子集。","metadata":{"chapter":"五、其他C++特性","section":"17. Boost 库","knowledge_point":"Boost库使用总原则"}}
+{"id":"5-17-2","content":"当前允许使用的Boost库：1) Compressed Pair；2) Pointer Container（不含ptr_array和序列化）。","metadata":{"chapter":"五、其他C++特性","section":"17. Boost 库","knowledge_point":"许可的Boost库清单"}}
+{"id":"5-17-3","content":"限制Boost的原因：部分Boost库提倡的元编程、函数式风格可读性差。","metadata":{"chapter":"五、其他C++特性","section":"17. Boost 库","knowledge_point":"限制Boost的原因"}}
+{"id":"6-1-1","content":"通用命名总原则：命名应具有描述性，不要过度缩写；类型和变量用名词，函数用命令性动词。","metadata":{"chapter":"六、命名约定","section":"1. 通用命名规则","knowledge_point":"通用命名总原则"}}
+{"id":"6-1-2","content":"缩写使用规则：除非项目外也广为人知，否则不要使用缩写；禁止使用省略字母的简写形式。","metadata":{"chapter":"六、命名约定","section":"1. 通用命名规则","knowledge_point":"缩写的使用规则"}}
+{"id":"6-2-1","content":"文件命名格式：全部小写，可包含下划线(_)或短线(-)，按项目约定统一。","metadata":{"chapter":"六、命名约定","section":"2. 文件命名","knowledge_point":"文件名格式规范"}}
+{"id":"6-2-2","content":"文件扩展名规范：C++源文件以.cc结尾，头文件以.h结尾。","metadata":{"chapter":"六、命名约定","section":"2. 文件命名","knowledge_point":"文件扩展名规范"}}
+{"id":"6-2-3","content":"文件命名要求：尽量明确，避免和系统头文件重名；类与文件名一一对应，如FooBar对应foo_bar.h和foo_bar.cc。","metadata":{"chapter":"六、命名约定","section":"2. 文件命名","knowledge_point":"文件命名的明确性要求"}}
+{"id":"6-3-1","content":"类型命名规则：每个单词首字母大写，不含下划线（大驼峰/帕斯卡命名）。","metadata":{"chapter":"六、命名约定","section":"3. 类型命名","knowledge_point":"类型命名规则"}}
+{"id":"6-3-2","content":"适用范围：类、结构体、typedef、枚举类型均遵循该规则。","metadata":{"chapter":"六、命名约定","section":"3. 类型命名","knowledge_point":"类型命名的适用范围"}}
+{"id":"6-4-1","content":"普通变量命名规则：全部小写，单词间以下划线相连（蛇形命名）。","metadata":{"chapter":"六、命名约定","section":"4. 变量命名","knowledge_point":"普通变量命名规则"}}
+{"id":"6-4-2","content":"类数据成员命名规则：同普通变量蛇形命名，末尾额外加下划线后缀。","metadata":{"chapter":"六、命名约定","section":"4. 变量命名","knowledge_point":"类成员变量命名规则"}}
+{"id":"6-4-3","content":"结构体数据成员命名规则：和普通变量一致，无需末尾下划线。","metadata":{"chapter":"六、命名约定","section":"4. 变量命名","knowledge_point":"结构体成员命名规则"}}
+{"id":"6-4-4","content":"全局变量建议：以g_或其他易区分的前缀标识，少用全局变量。","metadata":{"chapter":"六、命名约定","section":"4. 变量命名","knowledge_point":"全局变量命名建议"}}
+{"id":"6-5-1","content":"常量命名规则：名称前加k前缀，后续单词首字母大写。","metadata":{"chapter":"六、命名约定","section":"5. 常量命名","knowledge_point":"常量命名规则"}}
+{"id":"6-6-1","content":"普通函数命名规则：首字母大写，每个单词首字母大写，无下划线（大驼峰）。","metadata":{"chapter":"六、命名约定","section":"6. 函数命名","knowledge_point":"普通函数命名规则"}}
+{"id":"6-6-2","content":"存取函数命名规则：与对应变量名匹配，取值函数同名，赋值函数加set_前缀。","metadata":{"chapter":"六、命名约定","section":"6. 函数命名","knowledge_point":"存取函数命名规则"}}
+{"id":"6-7-1","content":"命名空间命名规则：全小写，基于项目名称和目录结构，单词间下划线连接。","metadata":{"chapter":"六、命名约定","section":"7. 命名空间","knowledge_point":"命名空间命名规则"}}
+{"id":"6-8-1","content":"枚举命名规则：枚举类型用大驼峰；枚举值全部大写，单词间下划线连接。","metadata":{"chapter":"六、命名约定","section":"8. 枚举命名","knowledge_point":"枚举命名规则"}}
+{"id":"6-9-1","content":"宏命名规则：全部大写，单词间下划线连接；前提是确实需要使用宏。","metadata":{"chapter":"六、命名约定","section":"9. 宏命名","knowledge_point":"宏命名规则"}}
+{"id":"6-10-1","content":"命名例外原则：命名与现有C/C++实体相似时，可参考既有约定保持一致。","metadata":{"chapter":"六、命名约定","section":"10. 命名规则例外","knowledge_point":"命名例外总原则"}}
+{"id":"7-1-1","content":"注释风格选择：//或/* */均可，项目内保持统一即可，//使用更广泛。","metadata":{"chapter":"七、注释","section":"1. 注释风格","knowledge_point":"注释风格要求"}}
+{"id":"7-2-1","content":"文件头部必填项：依次为版权声明、许可版本、作者信息。","metadata":{"chapter":"七、注释","section":"2. 文件注释","knowledge_point":"文件头注释的必填项"}}
+{"id":"7-2-2","content":"文件内容注释要求：.h说明类的功能和用法；.cc侧重实现细节或算法讨论；禁止.h和.cc间简单复制注释。","metadata":{"chapter":"七、注释","section":"2. 文件注释","knowledge_point":"文件内容注释要求"}}
+{"id":"7-3-1","content":"类注释要求：描述类的功能和用法；多线程类必须说明同步前提。","metadata":{"chapter":"七、注释","section":"3. 类注释","knowledge_point":"类注释的内容要求"}}
+{"id":"7-4-1","content":"函数声明处注释要求：用描述式语言说明功能和用法，包含输入输出、所有权、NULL合法性、性能影响、同步前提等信息。","metadata":{"chapter":"七、注释","section":"4. 函数注释","knowledge_point":"函数声明注释要求"}}
+{"id":"7-4-2","content":"构造/析构函数注释注意：无需赘述「构造/销毁对象」，重点说明参数所有权、清理内容等关键信息。","metadata":{"chapter":"七、注释","section":"4. 函数注释","knowledge_point":"构造析构函数注释注意事项"}}
+{"id":"7-4-3","content":"函数定义处注释要求：说明实现要点、实现理由、关键逻辑，不要直接复制声明处的注释。","metadata":{"chapter":"七、注释","section":"4. 函数注释","knowledge_point":"函数定义注释要求"}}
+{"id":"7-5-1","content":"变量注释原则：变量名足够清晰时无需注释；含义不明确或存在警戒值时必须注释。","metadata":{"chapter":"七、注释","section":"5. 变量注释","knowledge_point":"变量注释总原则"}}
+{"id":"7-5-2","content":"类成员变量必须注释用途；存在NULL、-1等警戒值时必须说明含义。","metadata":{"chapter":"七、注释","section":"5. 变量注释","knowledge_point":"成员变量注释要求"}}
+{"id":"7-6-1","content":"实现注释适用场景：巧妙、晦涩、重要、易出错的代码处添加注释。","metadata":{"chapter":"七、注释","section":"6. 实现注释","knowledge_point":"实现注释的适用场景"}}
+{"id":"7-6-2","content":"参数注释要求：向函数传入布尔值、整数字面量时，需注释参数含义，或使用命名常量提升可读性。","metadata":{"chapter":"七、注释","section":"6. 实现注释","knowledge_point":"函数参数注释要求"}}
+{"id":"7-6-3","content":"注释禁令：禁止用自然语言逐行翻译代码作为注释。","metadata":{"chapter":"七、注释","section":"6. 实现注释","knowledge_point":"无效注释禁令"}}
+{"id":"7-7-1","content":"注释语言规范：注意标点、拼写和语法，尽量使用完整句子，提升可读性。","metadata":{"chapter":"七、注释","section":"7. 标点、拼写和语法","knowledge_point":"注释的语言规范"}}
+{"id":"7-8-1","content":"TODO注释适用场景：临时方案、短期解决方案、不够完美但可工作的代码。","metadata":{"chapter":"七、注释","section":"8. TODO 注释","knowledge_point":"TODO注释的适用场景"}}
+{"id":"7-8-2","content":"TODO格式规范：全大写TODO，括号内标注联系人，可补充时间或触发事件说明。","metadata":{"chapter":"七、注释","section":"8. TODO 注释","knowledge_point":"TODO注释的格式规范"}}
+{"id":"8-1-1","content":"行长度限制：每一行代码字符数不超过80。","metadata":{"chapter":"八、格式","section":"1. 行长度","knowledge_point":"行长度限制标准"}}
+{"id":"8-1-2","content":"可超行宽的例外：长URL/命令、长路径、头文件保护宏。","metadata":{"chapter":"八、格式","section":"1. 行长度","knowledge_point":"行长度限制的例外场景"}}
+{"id":"8-2-1","content":"非ASCII字符原则：尽量不使用；必须使用时采用UTF-8编码。","metadata":{"chapter":"八、格式","section":"2. 非ASCII字符","knowledge_point":"非ASCII字符使用规范"}}
+{"id":"8-3-1","content":"缩进规范：只使用空格，每次缩进2个空格，编辑器设置将tab转为空格。","metadata":{"chapter":"八、格式","section":"3. 空格还是制表位","knowledge_point":"缩进规范"}}
+{"id":"8-4-1","content":"函数签名排版规则：返回类型和函数名在同一行；左括号与函数名同行且无空格；左大括号在最后参数行尾。","metadata":{"chapter":"八、格式","section":"4. 函数声明与定义","knowledge_point":"函数签名基本排版规则"}}
+{"id":"8-4-2","content":"参数换行规则：参数放不下时换行对齐，独立封装的参数使用4空格缩进。","metadata":{"chapter":"八、格式","section":"4. 函数声明与定义","knowledge_point":"参数换行对齐规则"}}
+{"id":"8-4-3","content":"const成员函数的const关键字应与最后一个参数位于同一行。","metadata":{"chapter":"八、格式","section":"4. 函数声明与定义","knowledge_point":"const关键字排版位置"}}
+{"id":"8-4-4","content":"未使用参数处理：函数定义处将参数名注释掉，声明处保留参数名。","metadata":{"chapter":"八、格式","section":"4. 函数声明与定义","knowledge_point":"未使用参数的注释方式"}}
+{"id":"8-5-1","content":"函数调用排版原则：尽量放在同一行；放不下则多行对齐，左括号后、右括号前不留空格。","metadata":{"chapter":"八、格式","section":"5. 函数调用","knowledge_point":"函数调用排版原则"}}
+{"id":"8-6-1","content":"条件语句空格规范：if与左括号间有空格；右括号与左大括号间有空格；圆括号内部不提倡加空格。","metadata":{"chapter":"八、格式","section":"6. 条件语句","knowledge_point":"条件语句空格规范"}}
+{"id":"8-6-2","content":"else位置规则：else与if的右大括号同行，不单独起一行。","metadata":{"chapter":"八、格式","section":"6. 条件语句","knowledge_point":"else的位置规则"}}
+{"id":"8-6-3","content":"单行条件语句限制：仅当语句简单且无else分支时，可写在同一行。","metadata":{"chapter":"八、格式","section":"6. 条件语句","knowledge_point":"单行条件语句的限制"}}
+{"id":"8-6-4","content":"大括号一致性规则：只要有一个分支使用了大括号，所有分支都必须使用大括号。","metadata":{"chapter":"八、格式","section":"6. 条件语句","knowledge_point":"大括号使用一致性规则"}}
+{"id":"8-7-1","content":"switch语句规则：case块可使用大括号；必须包含default分支；default永不到达时用assert。","metadata":{"chapter":"八、格式","section":"7. 循环和开关选择语句","knowledge_point":"switch语句格式规则"}}
+{"id":"8-7-2","content":"空循环体规范：使用{}或continue，禁止使用单独分号，避免与do/while混淆。","metadata":{"chapter":"八、格式","section":"7. 循环和开关选择语句","knowledge_point":"空循环体的规范写法"}}
+{"id":"8-8-1","content":"成员访问符规则：句点.和箭头->前后不加空格。","metadata":{"chapter":"八、格式","section":"8. 指针和引用表达式","knowledge_point":"成员访问符空格规则"}}
+{"id":"8-8-2","content":"指针/地址操作符规则：*和&后面不加空格。","metadata":{"chapter":"八、格式","section":"8. 指针和引用表达式","knowledge_point":"指针操作符空格规则"}}
+{"id":"8-8-3","content":"声明时星号位置：紧挨类型或紧挨变量均可，同一文件内保持一致。","metadata":{"chapter":"八、格式","section":"8. 指针和引用表达式","knowledge_point":"声明时星号位置灵活性"}}
+{"id":"8-9-1","content":"长布尔表达式换行规则：统一换行方式，逻辑运算符置于行尾。","metadata":{"chapter":"八、格式","section":"9. 布尔表达式","knowledge_point":"布尔表达式换行规则"}}
+{"id":"8-10-1","content":"return语句规则：返回表达式不使用圆括号。","metadata":{"chapter":"八、格式","section":"10. 函数返回值","knowledge_point":"return语句格式规则"}}
+{"id":"8-11-1","content":"初始化方式：=和()两种方式均可，项目内保持一致。","metadata":{"chapter":"八、格式","section":"11. 变量及数组初始化","knowledge_point":"变量初始化格式规则"}}
+{"id":"8-12-1","content":"预处理指令规则：不缩进，始终从行首开始，即使位于缩进代码块中。","metadata":{"chapter":"八、格式","section":"12. 预处理指令","knowledge_point":"预处理指令缩进规则"}}
+{"id":"8-13-1","content":"类格式规则：public/protected/private关键字缩进1个空格；除首个关键字外，其余前空一行；public在前，private在后。","metadata":{"chapter":"八、格式","section":"13. 类格式","knowledge_point":"类访问块格式规则"}}
+{"id":"8-14-1","content":"初始化列表排版：短列表放同一行；长列表冒号后换行，使用4空格缩进对齐。","metadata":{"chapter":"八、格式","section":"14. 初始化列表","knowledge_point":"初始化列表排版规则"}}
+{"id":"8-15-1","content":"命名空间格式规则：命名空间内部内容不额外缩进。","metadata":{"chapter":"八、格式","section":"15. 命名空间格式化","knowledge_point":"命名空间缩进规则"}}
+{"id":"8-16-1","content":"水平留白总原则：按需使用空格，禁止行尾多余空格。","metadata":{"chapter":"八、格式","section":"16. 水平留白","knowledge_point":"水平留白总原则"}}
+{"id":"8-17-1","content":"垂直留白总原则：越少越好，非必要不添加空行。","metadata":{"chapter":"八、格式","section":"17. 垂直留白","knowledge_point":"垂直留白总原则"}}
+{"id":"8-17-2","content":"空行限制：两个函数定义之间空行不超过2行；函数体首尾不要留空行。","metadata":{"chapter":"八、格式","section":"17. 垂直留白","knowledge_point":"空行数量限制"}}
+{"id":"9-1-1","content":"旧代码兼容原则：修改现有不符合规范的代码时，保持原有风格一致，优先保证局部一致性。","metadata":{"chapter":"九、规则之例外","section":"1. 现有不统一代码","knowledge_point":"旧代码的兼容原则"}}
+{"id":"9-2-1","content":"Windows代码通用要求：不用匈牙利命名法；尽量使用原生C++类型；警告级别3以上且视警告为错误；不用#pragma once，用标准头文件保护；尽量不使用非标准扩展。","metadata":{"chapter":"九、规则之例外","section":"2. Windows 代码","knowledge_point":"Windows代码通用适配要求"}}
+{"id":"9-2-2","content":"Windows平台特殊例外：COM/ATL/WTL可使用多重继承；ATL/STL编译可开启异常；预编译头用编译器选项自动包含；资源头文件不受风格约束。","metadata":{"chapter":"九、规则之例外","section":"2. Windows 代码","knowledge_point":"Windows平台的规则例外"}}
+{"id":"10-1-1","content":"团队合作核心原则：参考常识，保持一致；新增代码匹配现有文件风格，维护整体统一。","metadata":{"chapter":"十、团队合作","section":"1. 团队合作","knowledge_point":"团队编码一致性原则"}}
+{"id":"10-1-2","content":"编码规范的核心意义：提供公共编码标准，让开发者聚焦实现内容而非格式风格。","metadata":{"chapter":"十、团队合作","section":"1. 团队合作","knowledge_point":"编码规范的核心意义"}}

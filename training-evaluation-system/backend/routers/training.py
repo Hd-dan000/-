@@ -241,19 +241,19 @@ def _enrich_training(cursor, t):
 
 def handle_student_my_projects(handler):
     """学生查看自己参与的所有实训项目（通过course关联）"""
-    user, err = require_user(handler)
+    user, err = auth.require_user(handler)
     if err:
         return err
-    if not is_student(user):
-        return forbidden('仅学生可访问')
+    if not auth.is_student(user):
+        return auth.forbidden('仅学生可访问')
 
     # 获取学生加入的课程ID列表
-    course_ids = get_student_course_ids(user['id'])
+    course_ids = auth.get_student_course_ids(user['id'])
     if not course_ids:
         return 200, [('Content-Type', 'application/json')], json.dumps([], ensure_ascii=False)
 
     # 查询这些课程对应的实训项目
-    conn = get_sqlite_db()
+    conn = get_db()
     cursor = conn.cursor()
     placeholders = ','.join(['?'] * len(course_ids))
     cursor.execute(

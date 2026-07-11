@@ -23,12 +23,18 @@ def handle_get_llm_config(handler):
         'model': llm_service.model,
         'ollama_host': llm_service.ollama_host,
         'ollama_model': llm_service.ollama_model,
+        'embedding_provider': getattr(llm_service, 'embedding_provider', 'openai'),
+        'embedding_api_base': getattr(llm_service, 'embedding_api_base', ''),
+        'embedding_api_key': getattr(llm_service, 'embedding_api_key', ''),
+        'embedding_model': getattr(llm_service, 'embedding_model', ''),
     }
     for k, v in defaults.items():
         if k not in config:
             config[k] = v
     if 'api_key' in config:
         config['api_key'] = config['api_key'][:8] + '****' if config['api_key'] else ''
+    if 'embedding_api_key' in config:
+        config['embedding_api_key'] = config['embedding_api_key'][:8] + '****' if config['embedding_api_key'] else ''
     return 200, [('Content-Type', 'application/json')], json.dumps(config, ensure_ascii=False)
 
 def handle_update_llm_config(handler):

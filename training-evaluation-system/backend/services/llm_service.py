@@ -210,13 +210,16 @@ class LLMService:
     # ============================================================
     def get_embedding(self, text):
         """
-        调用 LLM API 获取文本的向量嵌入。
+        调用 Embedding API 获取文本的向量嵌入。
         兼容 OpenAI Embedding API 和 Ollama Embedding API。
+        Embedding 使用独立配置（embedding_provider / embedding_api_base / embedding_api_key / embedding_model），
+        可与对话模型（LLM）完全解耦。
         """
         if not text or not text.strip():
             return None
 
-        if self.provider == 'ollama':
+        provider = getattr(self, 'embedding_provider', None) or self.provider
+        if provider == 'ollama':
             # Ollama embedding API
             url = f"{self.ollama_host.rstrip('/')}/api/embeddings"
             data = {
@@ -233,18 +236,21 @@ class LLMService:
                 return None
         else:
             # OpenAI 兼容的 embedding API
-            url = f"{self.api_base.rstrip('/')}/embeddings"
+            api_base = getattr(self, 'embedding_api_base', None) or self.api_base
+            api_key = getattr(self, 'embedding_api_key', None) or self.api_key
+            model = getattr(self, 'embedding_model', None) or self.model
+            url = f"{api_base.rstrip('/')}/embeddings"
             data = {
-                'model': 'text-embedding-v3',  # 讯飞的 embedding 模型名
-                'input': text[:2000]
+                'model': model,
+                'input': text[:512]  # 按模型最大输入长度截断
             }
             headers = {'Content-Type': 'application/json'}
-            if self.api_password:
+            if api_key:
+                headers['Authorization'] = f'Bearer {api_key}'
+            elif self.api_password:
                 headers['Authorization'] = f'Bearer {self.api_password}'
-            elif self.api_key and not self.api_secret:
-                headers['Authorization'] = f'Bearer {self.api_key}'
             try:
-                result = self._make_request(url, data, headers, timeout=30)
+                result = self._make_request(url, data, headers, timeout=60)
                 if isinstance(result, dict) and 'data' in result and len(result['data']) > 0:
                     return result['data'][0]['embedding']
             except Exception as e:

@@ -883,7 +883,7 @@ const views = {
             );
             // 排序：进行中 > 待开始 > 已截止
             const detailOrder = { in_progress: 0, active: 0, not_started: 1, ended: 2 };
-            classTrainings.sort((a, b) => (detailOrder[a.status] 📋 9) - (detailOrder[b.status] 📋 9));
+            classTrainings.sort((a, b) => (detailOrder[a.status] || 9) - (detailOrder[b.status] || 9));
             const listEl = document.getElementById('class-trainings-list');
             if (listEl) {
                 listEl.innerHTML = classTrainings.length > 0
@@ -1026,7 +1026,7 @@ const views = {
 
             // 排序：进行中 > 待开始 > 已截止
             const order = { in_progress: 0, active: 0, not_started: 1, ended: 2 };
-            list.sort((a, b) => (order[a.status] 📋 9) - (order[b.status] 📋 9));
+            list.sort((a, b) => (order[a.status] || 9) - (order[b.status] || 9));
 
             return list;
         },
@@ -2404,7 +2404,7 @@ const views = {
                     const submissions = res.submissions || [];
                     const headers = ['学号', '姓名', 'AI评分', '教师评分', '最终评分', 'AI评阅状态', '文档状态'];
                     const rows = submissions.map(s => [
-                        s.student_id || '', s.student_name || '', s.ai_total_score 📋 '', s.teacher_score 📋 '', s.final_score 📋 '',
+                        s.student_id || '', s.student_name || '', s.ai_total_score || '', s.teacher_score || '', s.final_score || '',
                         s.ai_review_status || '', s.document_status || ''
                     ].join(','));
                     const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
