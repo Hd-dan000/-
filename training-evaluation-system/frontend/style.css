@@ -6057,3 +6057,665 @@ select.form-control {
         padding-right: 16px;
     }
 }
+
+/* ========== Training Detail 实训详情管理页 ========== */
+.td-page {
+    padding: 20px 24px 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.td-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 14px;
+    padding-left: 10px;
+    border-left: 4px solid var(--primary);
+}
+
+/* 基础信息卡片 */
+.td-basic-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+}
+
+.td-basic-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px 24px;
+    margin-bottom: 20px;
+}
+
+.td-info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.td-info-label {
+    color: var(--text-muted);
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.td-info-value {
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.td-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.td-type-group {
+    background: #FFF7E6;
+    color: #FA8C16;
+    border: 1px solid #FFD591;
+}
+
+.td-type-individual {
+    background: #E6FFFB;
+    color: #13C2C2;
+    border: 1px solid #87E8DE;
+}
+
+.td-status-active {
+    background: #E6F7FF;
+    color: #1677FF;
+    border: 1px solid #91D5FF;
+}
+
+.td-status-pending {
+    background: #FFF7E6;
+    color: #FA8C16;
+    border: 1px solid #FFD591;
+}
+
+.td-status-ended {
+    background: #F2F3F5;
+    color: #86909C;
+    border: 1px solid #D7D8DA;
+}
+
+.td-basic-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light);
+    flex-wrap: wrap;
+}
+
+/* 筛选栏 */
+.td-filter-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+    padding: 16px 20px;
+    margin-bottom: 16px;
+}
+
+.td-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.td-filter-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.td-filter-label {
+    color: var(--text-secondary);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.td-filter-search {
+    flex: 1;
+    min-width: 260px;
+}
+
+.td-filter-search .search-box {
+    width: 100%;
+}
+
+.td-filter-row .filter-select {
+    height: 32px;
+    padding: 0 10px;
+    border-color: #D7D8DA;
+    min-width: 110px;
+}
+
+.td-filter-search .search-box input {
+    height: 32px;
+}
+
+/* 批量操作栏 */
+.td-batch-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.td-batch-left,
+.td-batch-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.td-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-secondary);
+    user-select: none;
+}
+
+.td-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+
+.td-batch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.td-batch-btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.td-batch-btn-primary:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+.td-batch-btn-outline {
+    background: #fff;
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.td-batch-btn-outline:hover {
+    background: #E6F7FF;
+}
+
+.td-batch-link {
+    color: var(--primary);
+    background: transparent;
+    padding: 0 8px;
+}
+
+.td-batch-link:hover {
+    color: var(--primary-dark);
+}
+
+/* 提交卡片 */
+.td-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.td-group-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: minmax(160px, 2fr) 90px 120px minmax(140px, 1.5fr) auto;
+    align-items: center;
+    gap: 14px;
+    transition: var(--transition);
+}
+
+.td-group-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-light);
+}
+
+.td-card-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.td-card-checkbox {
+    flex-shrink: 0;
+}
+
+.td-group-badge {
+    flex-shrink: 0;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 12px;
+}
+
+.td-person-avatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.td-group-main {
+    min-width: 0;
+}
+
+.td-group-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.td-leader-tag {
+    font-size: 11px;
+    color: var(--warning);
+    background: var(--warning-light);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.td-group-members {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    min-width: 0;
+}
+
+.td-members-label {
+    flex-shrink: 0;
+}
+
+.td-members-value {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.td-group-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.td-card-score {
+    text-align: center;
+}
+
+.td-score-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.td-score-value {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 2px;
+}
+
+.td-score {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.td-score-empty {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-muted);
+    line-height: 1;
+}
+
+.td-score-total {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.td-card-status {
+    text-align: center;
+}
+
+.td-tag-submitted {
+    background: #E6F7FF;
+    color: #1677FF;
+    border: 1px solid #91D5FF;
+}
+
+.td-tag-late {
+    background: #FFF7E6;
+    color: #FA8C16;
+    border: 1px solid #FFD591;
+}
+
+.td-overdue-note {
+    color: #FF4D4F;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.td-tag-not-submitted {
+    background: #F2F3F5;
+    color: #86909C;
+    border: 1px solid #D7D8DA;
+}
+
+.td-submit-time {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+/* 文件预览 */
+.td-card-files {
+    min-width: 0;
+}
+
+.td-files-title {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.td-files-list {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.td-file-item {
+    width: 56px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.td-file-item:hover {
+    transform: translateY(-2px);
+}
+
+.td-file-icon {
+    width: 44px;
+    height: 44px;
+    margin: 0 auto 4px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.td-file-zip .td-file-icon { background: #FFF7E6; }
+.td-file-pdf .td-file-icon { background: #FFF1F0; }
+.td-file-img .td-file-icon { background: #E6FFFB; }
+.td-file-doc .td-file-icon { background: #E6F4FF; }
+
+.td-file-name {
+    font-size: 11px;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.td-more-files {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 18px;
+    background: var(--bg-body);
+    border-radius: var(--radius-sm);
+}
+
+/* 卡片操作按钮 */
+.td-card-actions {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 6px;
+    justify-content: end;
+}
+
+.td-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--primary-light);
+    background: #fff;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.td-action-btn:hover:not(:disabled) {
+    background: var(--primary-light);
+    border-color: var(--primary);
+}
+
+.td-action-danger {
+    color: var(--danger);
+    border-color: var(--danger-light);
+    background: #fff;
+}
+
+.td-action-danger:hover {
+    background: var(--danger-light);
+    border-color: var(--danger);
+}
+
+.td-action-disabled {
+    color: var(--text-muted);
+    border-color: var(--border-light);
+    background: #F7F8FA;
+    cursor: not-allowed;
+}
+
+/* 分页 */
+.td-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 0;
+    flex-wrap: wrap;
+}
+
+.td-pagination-total {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.td-page-btn {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.td-page-btn:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.td-page-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.td-page-btn:disabled {
+    color: var(--text-muted);
+    background: #F7F8FA;
+    cursor: not-allowed;
+}
+
+.td-pagination-jump {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.td-pagination-jump input {
+    width: 46px;
+    height: 30px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    font-size: 13px;
+}
+
+.td-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+}
+
+/* 响应式 */
+@media (max-width: 1200px) {
+    .td-basic-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .td-group-card {
+        grid-template-columns: minmax(140px, 2fr) 80px 110px minmax(120px, 1.5fr) auto;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .td-page {
+        padding: 16px;
+    }
+
+    .td-basic-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .td-basic-actions {
+        justify-content: flex-start;
+    }
+
+    .td-filter-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .td-filter-item {
+        width: 100%;
+    }
+
+    .td-filter-search {
+        min-width: auto;
+    }
+
+    .td-batch-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .td-group-card {
+        grid-template-columns: 1fr;
+    }
+
+    .td-card-left,
+    .td-card-score,
+    .td-card-status,
+    .td-card-files,
+    .td-card-actions {
+        width: 100%;
+    }
+
+    .td-card-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .td-pagination {
+        justify-content: center;
+    }
+}

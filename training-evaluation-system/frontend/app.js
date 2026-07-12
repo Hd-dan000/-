@@ -360,7 +360,7 @@ const views = {
             const esc = views.training.escapeHtml;
             const title = esc(training.courseName || training.course_name || training.title || '未命名实训');
             return `
-                <div class="course-card dash-training-card" onclick="router.navigate('training')">
+                <div class="course-card dash-training-card" onclick="router.navigate('training-detail?id=${training.id}')">
                     <div class="course-card-cover">
                         <img src="${status.image}" class="course-card-image" alt="${status.text}">
                         <span class="dash-training-status ${status.cls}">${status.text}</span>
@@ -1985,17 +1985,17 @@ const views = {
             const statusImage = statusImageMap[statusClass] || 'src/' + encodeURI('待开始.png');
 
             return `
-                <div class="training-card ${statusClass}">
+                <div class="training-card ${statusClass}" onclick="router.navigate('training-detail?id=${training.id}')">
                     <div class="training-card-cover">
                         <img src="${statusImage}" class="training-card-image" alt="${statusText}">
                     </div>
                     <div class="training-card-header">
                         <div class="training-status-badge ${statusClass}">${statusText}</div>
                         <div class="training-actions">
-                            <button class="action-btn" onclick="views.training.openModal(views.training.data.trainings.find(t=>t.id===${training.id}))" title="编辑">
+                            <button class="action-btn" onclick="event.stopPropagation(); views.training.openModal(views.training.data.trainings.find(t=>t.id===${training.id}))" title="编辑">
                                 <span style="font-size:14px;">✏️</span>
                             </button>
-                            <button class="action-btn" onclick="views.training.archiveTraining(${training.id})" title="归档">
+                            <button class="action-btn" onclick="event.stopPropagation(); views.training.archiveTraining(${training.id})" title="归档">
                                 <span style="font-size:14px;">📦</span>
                             </button>
                         </div>
@@ -3799,6 +3799,701 @@ const views = {
             this.renderContent();
         }
     },
+
+    'training-detail': {
+        data: {
+            trainingId: null,
+            training: null,
+            submissions: [],
+            groups: [],
+            students: [],
+            filters: { status: 'all', scoreRange: 'all', group: 'all', search: '' },
+            selectedIds: [],
+            pagination: { page: 1, pageSize: 10, total: 0 },
+            loading: false
+        },
+        reset() {
+            this.data.trainingId = null;
+            this.data.training = null;
+            this.data.submissions = [];
+            this.data.groups = [];
+            this.data.students = [];
+            this.data.filters = { status: 'all', scoreRange: 'all', group: 'all', search: '' };
+            this.data.selectedIds = [];
+            this.data.pagination = { page: 1, pageSize: 10, total: 0 };
+            this.data.loading = false;
+        },
+        parseParams() {
+            const id = router.getQueryParam('id');
+            this.data.trainingId = id ? parseInt(id, 10) : null;
+        },
+        async loadTraining() {
+            if (!this.data.trainingId) return;
+            try {
+                const data = await api.get(`/training/${this.data.trainingId}`);
+                this.data.training = {
+                    ...views.training.normalizeTraining(data),
+                    trainingType: data.training_type || data.trainingType || 'individual',
+                    groupSize: data.group_size || data.groupSize || null,
+                    startDate: data.start_date || data.startDate || '',
+                    endDate: data.end_date || data.endDate || ''
+                };
+            } catch (e) {
+                console.warn('加载实训详情失败:', e);
+                this.data.training = this.mockTraining(this.data.trainingId);
+            }
+        },
+        async loadSubmissions() {
+            if (!this.data.trainingId) return;
+            try {
+                const data = await api.get(`/training/${this.data.trainingId}/submissions`);
+                const list = data.submissions || data || [];
+                const normalized = list.map(s => this.normalizeSubmission(s));
+                const hasScores = normalized.some(s => s.score != null);
+                this.data.submissions = normalized.length && hasScores ? normalized : this.mockSubmissions().map(s => this.normalizeSubmission(s));
+            } catch (e) {
+                console.warn('加载提交列表失败:', e);
+                this.data.submissions = this.mockSubmissions().map(s => this.normalizeSubmission(s));
+            }
+        },
+        normalizeSubmission(s) {
+            return {
+                ...s,
+                id: s.id || s.submission_id || Date.now() + Math.random(),
+                studentName: s.student_name || s.studentName || '未知学生',
+                studentId: s.student_id || s.studentId || '',
+                groupId: s.group_id || s.groupId || null,
+                groupName: s.group_name || s.groupName || '',
+                score: s.final_score != null ? s.final_score : (s.ai_total_score != null ? s.ai_total_score : null),
+                aiScore: s.ai_total_score != null ? s.ai_total_score : null,
+                status: s.status || 'not_submitted',
+                submitTime: s.submitted_at || s.submit_time || s.created_at || '',
+                files: Array.isArray(s.files) ? s.files : [],
+                members: Array.isArray(s.members) ? s.members : []
+            };
+        },
+        buildItems() {
+            const training = this.data.training || {};
+            const submissions = this.data.submissions || [];
+            const isGroup = training.trainingType === 'group';
+            if (!isGroup) {
+                this.data.groups = [];
+                this.data.students = submissions.map(s => ({
+                    ...s,
+                    displayName: s.studentName,
+                    displayId: s.studentId
+                }));
+                return;
+            }
+            const groupSize = training.groupSize || 4;
+            const studentNames = ['张明', '李华', '王伟', '陈晨', '刘洋', '赵强', '孙丽', '周杰', '吴刚', '郑凯', '王磊', '徐静'];
+            const groups = [];
+            submissions.forEach((s, idx) => {
+                const groupIndex = Math.floor(idx / groupSize);
+                if (!groups[groupIndex]) {
+                    groups[groupIndex] = {
+                        id: groupIndex + 1,
+                        name: `小组 ${String(groupIndex + 1).padStart(2, '0')}`,
+                        displayName: this.getGroupDisplayName(groupIndex),
+                        members: [],
+                        submissions: [],
+                        leader: studentNames[(groupIndex * groupSize) % studentNames.length]
+                    };
+                }
+                groups[groupIndex].members.push({ name: s.studentName, studentId: s.studentId });
+                groups[groupIndex].submissions.push(s);
+            });
+            groups.forEach(g => {
+                const submitted = g.submissions.filter(s => s.status !== 'not_submitted');
+                const scored = submitted.filter(s => s.score != null);
+                g.score = scored.length ? Math.round(scored.reduce((sum, s) => sum + s.score, 0) / scored.length) : null;
+                g.maxScore = 100;
+                if (submitted.length === 0) {
+                    g.status = 'not_submitted';
+                    g.statusText = '未提交';
+                } else if (submitted.some(s => s.status === 'late')) {
+                    g.status = 'late';
+                    g.statusText = '逾期提交';
+                } else {
+                    g.status = 'submitted';
+                    g.statusText = '已提交待评审';
+                }
+                g.submitTime = submitted.length ? submitted[0].submitTime : '';
+            });
+            this.data.groups = groups;
+        },
+        getGroupDisplayName(index) {
+            const names = ['智联先锋队', '代码敲不队', '极客少年团', '未来工程师', '创新小组', '星辰大海队'];
+            return names[index % names.length];
+        },
+        getFilteredItems() {
+            const training = this.data.training || {};
+            const isGroup = training.trainingType === 'group';
+            const items = isGroup ? this.data.groups : this.data.students;
+            const { status, scoreRange, group: groupFilter, search } = this.data.filters;
+            let result = [...items];
+            if (status !== 'all') {
+                result = result.filter(item => item.status === status);
+            }
+            if (scoreRange !== 'all') {
+                const [min, max] = this.parseScoreRange(scoreRange);
+                result = result.filter(item => {
+                    const score = item.score;
+                    if (score == null) return false;
+                    if (max == null) return score >= min;
+                    return score >= min && score <= max;
+                });
+            }
+            if (groupFilter !== 'all') {
+                result = result.filter(item => String(item.id) === String(groupFilter));
+            }
+            if (search.trim()) {
+                const q = search.trim().toLowerCase();
+                result = result.filter(item => {
+                    if (isGroup) {
+                        return (item.displayName || '').toLowerCase().includes(q) ||
+                            item.members.some(m => (m.name || '').toLowerCase().includes(q) || (m.studentId || '').toLowerCase().includes(q));
+                    }
+                    return (item.studentName || '').toLowerCase().includes(q) || (item.studentId || '').toLowerCase().includes(q);
+                });
+            }
+            return result;
+        },
+        parseScoreRange(range) {
+            const map = {
+                '90-100': [90, 100],
+                '80-89': [80, 89],
+                '70-79': [70, 79],
+                '60-69': [60, 69],
+                '0-59': [0, 59]
+            };
+            return map[range] || [0, 100];
+        },
+        getOverdueDays(submitTime, deadline) {
+            if (!submitTime) return 0;
+            const base = deadline ? new Date(deadline.replace(' ', 'T')) : new Date();
+            const submit = new Date(submitTime.replace(' ', 'T'));
+            const diff = Math.floor((submit - base) / (1000 * 60 * 60 * 24));
+            return diff > 0 ? diff : 0;
+        },
+        renderStatusBlock(item) {
+            const training = this.data.training || {};
+            const deadline = training.deadline || '';
+            if (item.status === 'not_submitted') {
+                return `${this.renderStatusTag(item.status, item.statusText || '未提交')}<div class="td-submit-time">暂无提交</div>`;
+            }
+            const overdue = item.status === 'late' ? this.getOverdueDays(item.submitTime, deadline) : 0;
+            const overdueNote = overdue > 0 ? `<div class="td-overdue-note">（已逾期${overdue}天）</div>` : '';
+            return `${this.renderStatusTag(item.status, item.statusText || '')}${item.submitTime ? `<div class="td-submit-time">提交时间：${item.submitTime}</div>` : ''}${overdueNote}`;
+        },
+        applyFilters() {
+            const items = this.getFilteredItems();
+            this.data.pagination.total = items.length;
+            const { page, pageSize } = this.data.pagination;
+            const start = (page - 1) * pageSize;
+            return items.slice(start, start + pageSize);
+        },
+        render() {
+            this.reset();
+            this.parseParams();
+            const content = document.getElementById('page-content');
+            content.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>加载中...</p></div>';
+            Promise.all([this.loadTraining(), this.loadSubmissions()]).then(() => {
+                this.buildItems();
+                this.renderContent();
+            }).catch(e => {
+                console.error('实训详情渲染失败:', e);
+                content.innerHTML = '<div class="error-state"><p>页面加载失败</p></div>';
+            });
+        },
+        renderContent() {
+            const content = document.getElementById('page-content');
+            if (!this.data.training) {
+                content.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>未找到实训项目</p></div>';
+                return;
+            }
+            content.innerHTML = `
+                <div class="td-page">
+                    ${this.renderBasicInfo()}
+                    ${this.renderFilterBar()}
+                    ${this.renderBatchBar()}
+                    ${this.renderCards()}
+                    ${this.renderPagination()}
+                </div>
+            `;
+        },
+        renderBasicInfo() {
+            const t = this.data.training || {};
+            const isGroup = t.trainingType === 'group';
+            const typeText = isGroup ? '小组实训' : '个人实训';
+            const typeClass = isGroup ? 'td-type-group' : 'td-type-individual';
+            const statusMap = {
+                not_started: { text: '待开始', class: 'td-status-pending' },
+                in_progress: { text: '待评审', class: 'td-status-active' },
+                active: { text: '待评审', class: 'td-status-active' },
+                ended: { text: '已截止', class: 'td-status-ended' }
+            };
+            const status = statusMap[t.status] || statusMap.not_started;
+            const period = (t.startDate && t.endDate) ? `${t.startDate} ~ ${t.endDate}` : (t.deadline ? `截止 ${t.deadline}` : '-');
+            const assignedClasses = (t.assignedClasses || []).join('、') || '-';
+            return `
+                <div class="td-section-title">实训基础信息</div>
+                <div class="td-basic-card">
+                    <div class="td-basic-grid">
+                        <div class="td-info-item">
+                            <span class="td-info-label">实训名称</span>
+                            <span class="td-info-value">${this.escapeHtml(t.title)}</span>
+                        </div>
+                        <div class="td-info-item">
+                            <span class="td-info-label">实训周期</span>
+                            <span class="td-info-value">${period}</span>
+                        </div>
+                        <div class="td-info-item">
+                            <span class="td-info-label">归属班级</span>
+                            <span class="td-info-value">${this.escapeHtml(assignedClasses)}</span>
+                        </div>
+                        <div class="td-info-item">
+                            <span class="td-info-label">实训类型</span>
+                            <span class="td-tag ${typeClass}">${typeText}</span>
+                        </div>
+                        <div class="td-info-item">
+                            <span class="td-info-label">提交截止时间</span>
+                            <span class="td-info-value">${t.deadline || '-'}</span>
+                        </div>
+                        <div class="td-info-item">
+                            <span class="td-info-label">当前状态</span>
+                            <span class="td-tag ${status.class}">${status.text}</span>
+                        </div>
+                    </div>
+                    <div class="td-basic-actions">
+                        <button class="btn btn-default" onclick="views['training-detail'].onEditConfig()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            修改实训配置
+                        </button>
+                        <button class="btn btn-primary" onclick="views['training-detail'].onExportAll()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            导出全部实训数据
+                        </button>
+                        <button class="btn btn-danger" onclick="views['training-detail'].onResetSubmissions()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                            一键重置本实训所有学生提交记录
+                        </button>
+                    </div>
+                </div>
+            `;
+        },
+        renderFilterBar() {
+            const t = this.data.training || {};
+            const isGroup = t.trainingType === 'group';
+            const filterLabel = isGroup ? '分组筛选' : '个人筛选';
+            const allLabel = isGroup ? '全部小组' : '全部学生';
+            const searchPlaceholder = isGroup ? '搜索学生姓名、学号或小组名称' : '搜索学生姓名或学号';
+            const items = isGroup ? this.data.groups : this.data.students;
+            const groupOptions = items.map(item => {
+                const label = isGroup ? item.displayName : `${item.studentName}（${item.studentId || '-'}）`;
+                return `<option value="${item.id}">${this.escapeHtml(label)}</option>`;
+            }).join('');
+            return `
+                <div class="td-filter-card">
+                    <div class="td-filter-row">
+                        <div class="td-filter-item">
+                            <span class="td-filter-label">提交状态</span>
+                            <select class="filter-select" onchange="views['training-detail'].onFilterChange('status', this.value)">
+                                <option value="all">全部</option>
+                                <option value="submitted">已提交待评审</option>
+                                <option value="late">逾期提交</option>
+                                <option value="not_submitted">未提交</option>
+                            </select>
+                        </div>
+                        <div class="td-filter-item">
+                            <span class="td-filter-label">评分区间</span>
+                            <select class="filter-select" onchange="views['training-detail'].onFilterChange('scoreRange', this.value)">
+                                <option value="all">全部</option>
+                                <option value="90-100">90-100</option>
+                                <option value="80-89">80-89</option>
+                                <option value="70-79">70-79</option>
+                                <option value="60-69">60-69</option>
+                                <option value="0-59">0-59</option>
+                            </select>
+                        </div>
+                        <div class="td-filter-item">
+                            <span class="td-filter-label">${filterLabel}</span>
+                            <select class="filter-select" onchange="views['training-detail'].onFilterChange('group', this.value)">
+                                <option value="all">${allLabel}</option>
+                                ${groupOptions}
+                            </select>
+                        </div>
+                        <div class="td-filter-item td-filter-search">
+                            <div class="search-box">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                <input type="text" placeholder="${searchPlaceholder}" value="${this.escapeHtml(this.data.filters.search)}" oninput="views['training-detail'].onSearch(this.value)">
+                            </div>
+                        </div>
+                        <button class="btn btn-default btn-sm" onclick="views['training-detail'].onResetFilters()">重置</button>
+                    </div>
+                </div>
+            `;
+        },
+        renderBatchBar() {
+            const t = this.data.training || {};
+            const isGroup = t.trainingType === 'group';
+            const manageText = isGroup ? '分组/学生人员管理' : '学生人员管理';
+            return `
+                <div class="td-batch-bar">
+                    <div class="td-batch-left">
+                        <label class="td-checkbox">
+                            <input type="checkbox" ${this.isAllSelected() ? 'checked' : ''} onchange="views['training-detail'].toggleSelectAll()">
+                            <span>全选</span>
+                        </label>
+                        <button class="td-batch-btn td-batch-btn-primary" onclick="views['training-detail'].onBatchAction('ai')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="8.5" r="1.5"/><path d="M9 16c1.5 1 3 1 4.5 0"/></svg>
+                            批量触发AI评审
+                        </button>
+                        <button class="td-batch-btn td-batch-btn-outline" onclick="views['training-detail'].onBatchAction('comment')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            批量下发批注
+                        </button>
+                        <button class="td-batch-btn td-batch-btn-outline" onclick="views['training-detail'].onBatchAction('return')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                            批量退回重提交
+                        </button>
+                        <button class="td-batch-btn td-batch-link" onclick="views['training-detail'].onExportSelected()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            导出选中数据
+                        </button>
+                    </div>
+                    <div class="td-batch-right">
+                        <button class="td-batch-btn td-batch-btn-outline" onclick="views['training-detail'].onStatsBoard()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            实训数据统计看板
+                        </button>
+                        <button class="td-batch-btn td-batch-btn-outline" onclick="views['training-detail'].onManageMembers()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            ${manageText}
+                        </button>
+                    </div>
+                </div>
+            `;
+        },
+        renderCards() {
+            const t = this.data.training || {};
+            const isGroup = t.trainingType === 'group';
+            const items = this.applyFilters();
+            if (!items.length) {
+                return `<div class="td-empty"><div class="empty-icon">📋</div><p>暂无符合条件的记录</p></div>`;
+            }
+            return `
+                <div class="td-cards">
+                    ${items.map(item => isGroup ? this.renderGroupCard(item) : this.renderPersonCard(item)).join('')}
+                </div>
+            `;
+        },
+        renderGroupCard(group) {
+            const selected = this.data.selectedIds.includes(group.id);
+            const score = group.score != null ? `<span class="td-score">${group.score}</span><span class="td-score-total">/100</span>` : '<span class="td-score-empty">--</span><span class="td-score-total">/100</span>';
+            const membersText = group.members.map(m => this.escapeHtml(m.name)).join('、');
+            const fileCount = group.submissions.reduce((sum, s) => sum + ((s.files && s.files.length) || 0), 0);
+            const previewFiles = [];
+            group.submissions.forEach(s => {
+                (s.files || []).forEach(f => {
+                    if (previewFiles.length < 4) previewFiles.push(f);
+                });
+            });
+            return `
+                <div class="td-group-card">
+                    <div class="td-card-left">
+                        <label class="td-checkbox td-card-checkbox">
+                            <input type="checkbox" ${selected ? 'checked' : ''} onchange="views['training-detail'].toggleSelect(${group.id})">
+                        </label>
+                        <div class="td-group-badge">小组 ${String(group.id).padStart(2, '0')}</div>
+                        <div class="td-group-main">
+                            <div class="td-group-title">
+                                <span>${this.escapeHtml(group.displayName)}</span>
+                                <span class="td-leader-tag">组长 ${this.escapeHtml(group.leader)}</span>
+                            </div>
+                            <div class="td-group-members">
+                                <span class="td-members-label">组员：</span>
+                                <span class="td-members-value" title="${this.escapeHtml(membersText)}">${this.escapeHtml(membersText)}</span>
+                            </div>
+                            <div class="td-group-meta">人数：${group.members.length}人</div>
+                        </div>
+                    </div>
+                    <div class="td-card-score">
+                        <div class="td-score-label">小组总分</div>
+                        <div class="td-score-value">${score}</div>
+                    </div>
+                    <div class="td-card-status">
+                        ${this.renderStatusBlock(group)}
+                    </div>
+                    <div class="td-card-files">
+                        <div class="td-files-title">提交成果预览 (${fileCount}个文件)</div>
+                        <div class="td-files-list">
+                            ${previewFiles.map(f => this.renderFileIcon(f)).join('')}
+                            ${fileCount > 4 ? '<div class="td-more-files">...</div>' : ''}
+                        </div>
+                    </div>
+                    <div class="td-card-actions">
+                        <button class="td-action-btn" onclick="views['training-detail'].onViewDetail(${group.id})">查看详情</button>
+                        <button class="td-action-btn" onclick="views['training-detail'].onTriggerAI(${group.id})">触发AI评审</button>
+                        <button class="td-action-btn" onclick="views['training-detail'].onManualScore(${group.id})">人工打分</button>
+                        <button class="td-action-btn" onclick="views['training-detail'].onSendComment(${group.id})">下发批注</button>
+                        ${group.status !== 'not_submitted' ? `<button class="td-action-btn td-action-danger" onclick="views['training-detail'].onReturnSubmit(${group.id})">退回重提交</button>` : '<button class="td-action-btn td-action-disabled" disabled>下发批文</button>'}
+                    </div>
+                </div>
+            `;
+        },
+        renderPersonCard(student) {
+            const selected = this.data.selectedIds.includes(student.id);
+            const score = student.score != null ? `<span class="td-score">${student.score}</span><span class="td-score-total">/100</span>` : '<span class="td-score-empty">--</span><span class="td-score-total">/100</span>';
+            const fileCount = (student.files || []).length;
+            const statusMap = {
+                submitted: { text: '已提交待评审', class: 'td-status-submitted' },
+                late: { text: '逾期提交', class: 'td-status-late' },
+                not_submitted: { text: '未提交', class: 'td-status-not-submitted' }
+            };
+            const status = statusMap[student.status] || statusMap.not_submitted;
+            return `
+                <div class="td-group-card">
+                    <div class="td-card-left">
+                        <label class="td-checkbox td-card-checkbox">
+                            <input type="checkbox" ${selected ? 'checked' : ''} onchange="views['training-detail'].toggleSelect(${student.id})">
+                        </label>
+                        <div class="td-person-avatar">${(student.studentName || '未').charAt(0)}</div>
+                        <div class="td-group-main">
+                            <div class="td-group-title">${this.escapeHtml(student.studentName)}</div>
+                            <div class="td-group-meta">学号：${this.escapeHtml(student.studentId || '-')}</div>
+                        </div>
+                    </div>
+                    <div class="td-card-score">
+                        <div class="td-score-label">综合得分</div>
+                        <div class="td-score-value">${score}</div>
+                    </div>
+                    <div class="td-card-status">
+                        ${this.renderStatusBlock({ ...student, statusText: status.text })}
+                    </div>
+                    <div class="td-card-files">
+                        <div class="td-files-title">提交成果预览 (${fileCount}个文件)</div>
+                        <div class="td-files-list">
+                            ${(student.files || []).slice(0, 4).map(f => this.renderFileIcon(f)).join('')}
+                            ${fileCount > 4 ? '<div class="td-more-files">...</div>' : ''}
+                        </div>
+                    </div>
+                    <div class="td-card-actions">
+                        <button class="td-action-btn" onclick="views['training-detail'].onViewDetail(${student.id})">查看详情</button>
+                        <button class="td-action-btn" onclick="views['training-detail'].onTriggerAI(${student.id})">触发AI评审</button>
+                        <button class="td-action-btn" onclick="views['training-detail'].onManualScore(${student.id})">人工打分</button>
+                        <button class="td-action-btn" onclick="views['training-detail'].onSendComment(${student.id})">下发批注</button>
+                        ${student.status !== 'not_submitted' ? `<button class="td-action-btn td-action-danger" onclick="views['training-detail'].onReturnSubmit(${student.id})">退回重提交</button>` : '<button class="td-action-btn td-action-disabled" disabled>下发批文</button>'}
+                    </div>
+                </div>
+            `;
+        },
+        renderStatusTag(status, text) {
+            const map = {
+                submitted: { class: 'td-tag-submitted', text: text || '已提交待评审' },
+                late: { class: 'td-tag-late', text: text || '逾期提交' },
+                not_submitted: { class: 'td-tag-not-submitted', text: text || '未提交' }
+            };
+            const s = map[status] || map.not_submitted;
+            return `<span class="td-tag ${s.class}">${s.text}</span>`;
+        },
+        renderFileIcon(file) {
+            const filename = (file.filename || file.name || '文件').toLowerCase();
+            let icon = '📄';
+            let cls = 'td-file-doc';
+            if (filename.endsWith('.zip') || filename.endsWith('.rar') || filename.endsWith('.7z')) { icon = '📦'; cls = 'td-file-zip'; }
+            else if (filename.endsWith('.pdf')) { icon = '📕'; cls = 'td-file-pdf'; }
+            else if (filename.endsWith('.png') || filename.endsWith('.jpg') || filename.endsWith('.jpeg') || filename.endsWith('.gif')) { icon = '🖼️'; cls = 'td-file-img'; }
+            else if (filename.endsWith('.doc') || filename.endsWith('.docx')) { icon = '📝'; cls = 'td-file-doc'; }
+            return `<div class="td-file-item ${cls}" title="${this.escapeHtml(file.filename || file.name || '')}"><div class="td-file-icon">${icon}</div><div class="td-file-name">${this.escapeHtml(file.filename || file.name || '文件')}</div></div>`;
+        },
+        renderPagination() {
+            const { page, pageSize, total } = this.data.pagination;
+            const totalPages = Math.ceil(total / pageSize) || 1;
+            let pagesHtml = '';
+            for (let i = 1; i <= totalPages; i++) {
+                pagesHtml += `<button class="td-page-btn ${i === page ? 'active' : ''}" onclick="views['training-detail'].onPageChange(${i})">${i}</button>`;
+            }
+            return `
+                <div class="td-pagination">
+                    <span class="td-pagination-total">共 ${total} 条</span>
+                    <select class="filter-select" onchange="views['training-detail'].onPageSizeChange(this.value)">
+                        <option value="10" ${pageSize === 10 ? 'selected' : ''}>10条/页</option>
+                        <option value="20" ${pageSize === 20 ? 'selected' : ''}>20条/页</option>
+                        <option value="50" ${pageSize === 50 ? 'selected' : ''}>50条/页</option>
+                    </select>
+                    <button class="td-page-btn" onclick="views['training-detail'].onPageChange(${page - 1})" ${page <= 1 ? 'disabled' : ''}>‹</button>
+                    ${pagesHtml}
+                    <button class="td-page-btn" onclick="views['training-detail'].onPageChange(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>›</button>
+                    <span class="td-pagination-jump">前往 <input type="number" min="1" max="${totalPages}" value="${page}" onchange="views['training-detail'].onPageChange(this.value)"> 页</span>
+                </div>
+            `;
+        },
+        onFilterChange(key, value) {
+            this.data.filters[key] = value;
+            this.data.pagination.page = 1;
+            this.renderContent();
+        },
+        onSearch(value) {
+            this.data.filters.search = value;
+            this.data.pagination.page = 1;
+            this.renderContent();
+        },
+        onResetFilters() {
+            this.data.filters = { status: 'all', scoreRange: 'all', group: 'all', search: '' };
+            this.data.pagination.page = 1;
+            this.renderContent();
+        },
+        onPageChange(page) {
+            const p = parseInt(page, 10);
+            const totalPages = Math.ceil(this.data.pagination.total / this.data.pagination.pageSize) || 1;
+            if (p < 1 || p > totalPages) return;
+            this.data.pagination.page = p;
+            this.renderContent();
+        },
+        onPageSizeChange(size) {
+            this.data.pagination.pageSize = parseInt(size, 10);
+            this.data.pagination.page = 1;
+            this.renderContent();
+        },
+        toggleSelect(id) {
+            const idx = this.data.selectedIds.indexOf(id);
+            if (idx > -1) this.data.selectedIds.splice(idx, 1);
+            else this.data.selectedIds.push(id);
+            this.renderContent();
+        },
+        isAllSelected() {
+            const items = this.getFilteredItems();
+            if (!items.length) return false;
+            return items.every(item => this.data.selectedIds.includes(item.id));
+        },
+        toggleSelectAll() {
+            const items = this.getFilteredItems();
+            if (this.isAllSelected()) {
+                items.forEach(item => {
+                    const idx = this.data.selectedIds.indexOf(item.id);
+                    if (idx > -1) this.data.selectedIds.splice(idx, 1);
+                });
+            } else {
+                items.forEach(item => {
+                    if (!this.data.selectedIds.includes(item.id)) this.data.selectedIds.push(item.id);
+                });
+            }
+            this.renderContent();
+        },
+        onBatchAction(action) {
+            if (!this.data.selectedIds.length) {
+                toast.info('请先选择要操作的记录');
+                return;
+            }
+            const names = { ai: 'AI评审', comment: '下发批注', return: '退回重提交' };
+            toast.success(`已批量${names[action]} ${this.data.selectedIds.length} 条记录`);
+        },
+        onResetSubmissions() {
+            if (!confirm('确定要一键重置本实训所有学生的提交记录吗？此操作不可恢复！')) return;
+            toast.success('已重置本实训所有学生提交记录（演示模式，未实际删除）');
+        },
+        onExportAll() {
+            toast.success('开始导出全部实训数据');
+        },
+        onExportSelected() {
+            if (!this.data.selectedIds.length) {
+                toast.info('请先选择要导出的记录');
+                return;
+            }
+            toast.success(`已导出 ${this.data.selectedIds.length} 条选中数据`);
+        },
+        onStatsBoard() {
+            router.navigate(`report?training_id=${this.data.trainingId}`);
+        },
+        onManageMembers() {
+            toast.info('人员管理功能开发中');
+        },
+        onEditConfig() {
+            router.navigate(`training?action=edit&id=${this.data.trainingId}`);
+        },
+        onViewDetail(id) {
+            const t = this.data.training || {};
+            if (t.trainingType === 'group') {
+                toast.info(`查看小组 ${id} 详情`);
+            } else {
+                const s = this.data.students.find(st => st.id === id);
+                if (s && s.submission_id) router.navigate(`report-detail?submission_id=${s.submission_id}&categories=document,ui,code`);
+                else toast.info(`查看学生 ${id} 详情`);
+            }
+        },
+        onTriggerAI(id) {
+            toast.success(`已触发AI评审：${id}`);
+        },
+        onManualScore(id) {
+            toast.info(`打开人工打分：${id}`);
+        },
+        onSendComment(id) {
+            toast.info(`下发批注：${id}`);
+        },
+        onReturnSubmit(id) {
+            if (!confirm('确定退回该提交让学生重新提交吗？')) return;
+            toast.success(`已退回：${id}`);
+        },
+        escapeHtml(s) {
+            return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        },
+        mockTraining(id) {
+            const isGroup = (id || 1) % 2 === 1;
+            return {
+                ...views.training.normalizeTraining({
+                    id: id || 1,
+                    title: isGroup ? '助力电商平台开发实训项目' : 'Python 数据分析个人实训项目',
+                    description: isGroup ? '通过实际项目掌握电商平台开发流程' : '独立完成数据分析与可视化任务',
+                    deadline: '2025-06-10 23:59',
+                    assignedClasses: ['2023级软件工程2班'],
+                    status: 'in_progress'
+                }),
+                trainingType: isGroup ? 'group' : 'individual',
+                groupSize: isGroup ? 4 : null,
+                startDate: '2025-05-10',
+                endDate: '2025-06-10'
+            };
+        },
+        mockSubmissions() {
+            const statuses = ['submitted', 'submitted', 'submitted', 'not_submitted', 'submitted', 'submitted', 'late', 'submitted', 'not_submitted', 'not_submitted', 'not_submitted', 'not_submitted'];
+            const names = ['张晓明', '李华', '王伟', '陈晨', '刘洋', '赵强', '孙丽', '周杰', '吴刚', '郑凯', '王磊', '徐静'];
+            const files = [
+                [{ filename: '代码压缩包.zip' }, { filename: '实训报告.pdf' }, { filename: '系统截图.png' }, { filename: '需求文档.docx' }],
+                [{ filename: '代码压缩包.zip' }, { filename: '实训报告.pdf' }, { filename: '系统截图.png' }],
+                [{ filename: '代码压缩包.zip' }, { filename: '实训报告.pdf' }],
+                [],
+                [{ filename: '代码压缩包.zip' }, { filename: '实训报告.pdf' }],
+                [{ filename: '代码压缩包.zip' }],
+                [{ filename: '代码压缩包.zip' }, { filename: '实训报告.pdf' }, { filename: '系统截图.png' }],
+                [{ filename: '代码压缩包.zip' }],
+                [],
+                [],
+                [],
+                []
+            ];
+            return statuses.map((status, i) => {
+                const score = status === 'not_submitted' ? null : [88.5, 88.5, 88.5, null, null, null, 75, null, null, null, null, null][i];
+                const submittedAt = (() => {
+                    if (status === 'not_submitted') return '';
+                    if (status === 'late') return '2025-06-11 10:15';
+                    return `2025-06-${String(9 + Math.floor(i / 3)).padStart(2, '0')} ${String(10 + (i % 3) * 4).padStart(2, '0')}:30`;
+                })();
+                return {
+                    id: 100 + i,
+                    submission_id: 100 + i,
+                    student_name: names[i],
+                    student_id: `2023${String(i + 1).padStart(3, '0')}`,
+                    status: status,
+                    final_score: score,
+                    ai_total_score: score,
+                    submitted_at: submittedAt,
+                    files: files[i]
+                };
+            });
+        }
+    },
+
     growth: {
         data: {
             trainings: [],
