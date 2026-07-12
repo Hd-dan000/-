@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新建实训项目 - 原型图</title>
+    <style>
+        :root {
+            --primary: #1677ff;
+            --primary-dark: #0958d9;
+            --primary-hover: #4096ff;
+            --primary-light: #e8f3ff;
+            --primary-gradient: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+            --success: #52C41A;
+            --success-light: #F6FFED;
+            --warning: #FAAD14;
+            --danger: #FF4D4F;
+            --text-primary: #1D2129;
+            --text-secondary: #4E5969;
+            --text-muted: #86909C;
+            --bg-body: #F5F7FA;
+            --bg-card: #ffffff;
+            --border: #E5E6EB;
+            --border-light: #F0F0F5;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --transition: all 0.25s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            font-size: 14px;
+            color: var(--text-primary);
+            background: var(--bg-body);
+            overflow: hidden;
+        }
+
+        /* 页面容器：模拟点击后进入的新界面 */
+        .create-training-page {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: var(--bg-body);
+        }
+
+        /* 顶部标题栏 */
+        .page-header {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .page-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            border-radius: 50%;
+            color: var(--text-muted);
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .page-close:hover {
+            background: var(--border-light);
+            color: var(--text-primary);
+        }
+
+        /* 可滚动内容区 */
+        .page-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 32px 120px;
+        }
+
+        .page-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 28px 32px;
+        }
+
+        /* 分节标题：左侧蓝色竖条 */
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+        }
+
+        /* 表单项：参考图片的左右布局 */
+        .form-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+
+        .form-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            width: 120px;
+            flex-shrink: 0;
+            padding-top: 9px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-align: left;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: var(--danger);
+        }
+
+        .form-control-wrap {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* 输入框统一样式 */
+        .input,
+        .textarea,
+        .select {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-primary);
+            background: #fff;
+            transition: var(--transition);
+            font-family: inherit;
+            outline: none;
+        }
+
+        .input::placeholder,
+        .textarea::placeholder,
+        .select::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input:focus,
+        .textarea:focus,
+        .select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.1);
+        }
+
+        .textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* 起止时间并列 */
+        .date-range {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .date-range .input {
+            flex: 1;
+        }
+
+        .date-separator {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        /* 单选卡片 */
+        .radio-group {
+            display: flex;
+            gap: 16px;
+        }
+
+        .radio-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            background: #fff;
+        }
+
+        .radio-card:hover {
+            border-color: var(--primary-hover);
+        }
+
+        .radio-card.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .radio-card input {
+            display: none;
+        }
+
+        .radio-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            background: #fff;
+        }
+
+        .radio-dot::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            transform: scale(0);
+            transition: var(--transition);
+        }
+
+        .radio-card.active .radio-dot {
+            border-color: var(--primary);
+        }
+
+        .radio-card.active .radio-dot::after {
+            transform: scale(1);
+        }
+
+        .radio-card .radio-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .radio-card.active .radio-text {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        /* 分组人数配置 */
+        .group-size-config {
+            margin-top: 12px;
+            display: none;
+        }
+
+        .group-size-config.show {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .group-size-config .input {
+            width: 160px;
+        }
+
+        .group-size-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* 上传区域 */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-md);
+            padding: 28px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-muted);
+            background: #fff;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .upload-icon {
+            width: 32px;
+            height: 32px;
+            margin: 0 auto 8px;
+            color: var(--primary);
+        }
+
+        .upload-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .upload-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* 成果提交规范：四列卡片 */
+        .submission-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .submission-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            background: #fff;
+        }
+
+        .submission-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .submission-card-title .num {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .card-row {
+            margin-bottom: 14px;
+        }
+
+        .card-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .card-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 14px;
+        }
+
+        .checkbox-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .checkbox-item input {
+            display: none;
+        }
+
+        .checkbox-box {
+            width: 14px;
+            height: 14px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            background: #fff;
+            font-size: 10px;
+            color: transparent;
+        }
+
+        .checkbox-item.active .checkbox-box {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .checkbox-item.active {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .other-input {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .other-input .input {
+            width: 90px;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        /* 单选行 */
+        .radio-inline-group {
+            display: flex;
+            gap: 16px;
+        }
+
+        .radio-inline {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .radio-inline input { display: none; }
+
+        .radio-inline .radio-dot {
+            width: 14px;
+            height: 14px;
+        }
+
+        .radio-inline .radio-dot::after {
+            width: 6px;
+            height: 6px;
+        }
+
+        .radio-inline.active {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .radio-inline.active .radio-dot {
+            border-color: var(--primary);
+        }
+
+        .radio-inline.active .radio-dot::after {
+            transform: scale(1);
+        }
+
+        /* 限制输入 */
+        .limit-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .limit-input-row .input {
+            width: 70px;
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+
+        .limit-unit {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* 开关 */
+        .switch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .switch-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .switch-info {
+            flex: 1;
+        }
+
+        .switch-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .switch-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+        .toggle-track {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--border);
+            border-radius: 12px;
+            transition: var(--transition);
+        }
+
+        .toggle-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transition: var(--transition);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .toggle-switch input:checked + .toggle-track {
+            background: var(--primary);
+        }
+
+        .toggle-switch input:checked + .toggle-track .toggle-thumb {
+            transform: translateX(20px);
+        }
+
+        /* 底部操作栏 */
+        .page-footer {
+            flex-shrink: 0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-light);
+            padding: 14px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.04);
+            z-index: 10;
+        }
+
+        .footer-hint {
+            position: fixed;
+            bottom: 66px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 6px 0;
+        }
+
+        .btn {
+            padding: 9px 28px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            outline: none;
+        }
+
+        .btn-default {
+            background: #fff;
+            color: var(--text-secondary);
+            border-color: var(--border);
+        }
+
+        .btn-default:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            box-shadow: 0 4px 12px rgba(22, 119, 255, 0.35);
+        }
+
+        .btn-sm {
+            padding: 5px 14px;
+            font-size: 12px;
+        }
+
+        /* 保存模板 */
+        .template-save-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .template-save-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* 响应式 */
+        @media (max-width: 1100px) {
+            .submission-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-body {
+                padding: 16px;
+                padding-bottom: 120px;
+            }
+
+            .page-content {
+                padding: 20px;
+            }
+
+            .form-label {
+                width: 100px;
+            }
+
+            .submission-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .radio-group {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="create-training-page">
+        <!-- 顶部标题栏 -->
+        <header class="page-header">
+            <div class="page-title">新建实训项目</div>
+            <button class="page-close" onclick="history.back()">&times;</button>
+        </header>
+
+        <!-- 可滚动内容区 -->
+        <main class="page-body">
+            <div class="page-content">
+                <!-- 1. 基本信息 -->
+                <section class="section">
+                    <div class="section-title">基本信息</div>
+
+                    <div class="form-row">
+                        <label class="form-label required">实训名称</label>
+                        <div class="form-control-wrap">
+                            <input type="text" class="input" placeholder="请输入实训名称">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label required">实训周期</label>
+                        <div class="form-control-wrap">
+                            <div class="date-range">
+                                <input type="date" class="input" placeholder="开始日期">
+                                <span class="date-separator">—</span>
+                                <input type="date" class="input" placeholder="结束日期">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label required">归属班级</label>
+                        <div class="form-control-wrap">
+                            <select class="select">
+                                <option value="">请选择归属班级</option>
+                                <option value="1">软件工程2101班</option>
+                                <option value="2">计算机科学2102班</option>
+                                <option value="3">人工智能2103班</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label">实训类型</label>
+                        <div class="form-control-wrap">
+                            <div class="radio-group">
+                                <label class="radio-card active" onclick="selectTrainingType(this, 'individual')">
+                                    <input type="radio" name="trainingType" value="individual" checked>
+                                    <span class="radio-dot"></span>
+                                    <span class="radio-text">个人实训</span>
+                                </label>
+                                <label class="radio-card" onclick="selectTrainingType(this, 'group')">
+                                    <input type="radio" name="trainingType" value="group">
+                                    <span class="radio-dot"></span>
+                                    <span class="radio-text">小组实训</span>
+                                </label>
+                            </div>
+                            <div class="group-size-config" id="groupSizeConfig">
+                                <input type="number" class="input" placeholder="请输入每组人数" min="2" max="10">
+                                <span class="group-size-hint">建议 2-10 人/组</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. 实训内容 -->
+                <section class="section">
+                    <div class="section-title">实训内容</div>
+
+                    <div class="form-row">
+                        <label class="form-label required">实训任务描述</label>
+                        <div class="form-control-wrap">
+                            <textarea class="textarea" rows="4" placeholder="请详细描述实训目标、任务要求、预期成果等内容"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label">需求文档上传</label>
+                        <div class="form-control-wrap">
+                            <div class="upload-area">
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                <div class="upload-text">点击或拖拽文件到此处上传</div>
+                                <div class="upload-hint">支持 doc / docx / pdf 格式，大小不超过 50MB</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. 成果提交规范配置 -->
+                <section class="section">
+                    <div class="section-title">成果提交规范配置</div>
+                    <div class="submission-grid">
+                        <!-- 1. 源代码配置 -->
+                        <div class="submission-card">
+                            <div class="submission-card-title"><span class="num">1.</span> 源代码配置</div>
+                            <div class="card-row">
+                                <label class="checkbox-item active">
+                                    <input type="checkbox" checked>
+                                    <span class="checkbox-box">✓</span>
+                                    <span>启用源代码提交</span>
+                                </label>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">支持后缀（可多选）</div>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-item active"><input type="checkbox" checked><span class="checkbox-box">✓</span><span>java</span></label>
+                                    <label class="checkbox-item active"><input type="checkbox" checked><span class="checkbox-box">✓</span><span>py</span></label>
+                                    <label class="checkbox-item active"><input type="checkbox" checked><span class="checkbox-box">✓</span><span>js</span></label>
+                                    <label class="checkbox-item"><input type="checkbox"><span class="checkbox-box">✓</span><span>sql</span></label>
+                                    <label class="checkbox-item"><input type="checkbox"><span class="checkbox-box">✓</span><span>vue</span></label>
+                                    <label class="checkbox-item"><input type="checkbox"><span class="checkbox-box">✓</span><span>cpp</span></label>
+                                    <label class="checkbox-item"><input type="checkbox"><span class="checkbox-box">✓</span><span>go</span></label>
+                                    <label class="checkbox-item"><input type="checkbox"><span class="checkbox-box">✓</span><span>php</span></label>
+                                    <label class="checkbox-item"><input type="checkbox"><span class="checkbox-box">✓</span><span>其他</span></label>
+                                    <span class="other-input"><input type="text" class="input" placeholder="请输入后缀"></span>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">提交形式</div>
+                                <div class="radio-inline-group">
+                                    <label class="radio-inline active"><input type="radio" name="codeForm" checked><span class="radio-dot"></span><span>单文件</span></label>
+                                    <label class="radio-inline"><input type="radio" name="codeForm"><span class="radio-dot"></span><span>压缩包</span></label>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">大小上限</div>
+                                <div class="limit-input-row">
+                                    <input type="number" class="input" value="500">
+                                    <span class="limit-unit">MB</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. 文档配置 -->
+                        <div class="submission-card">
+                            <div class="submission-card-title"><span class="num">2.</span> 文档配置</div>
+                            <div class="card-row">
+                                <label class="checkbox-item active">
+                                    <input type="checkbox" checked>
+                                    <span class="checkbox-box">✓</span>
+                                    <span>启用文档提交</span>
+                                </label>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">支持格式（可多选）</div>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-item active"><input type="checkbox" checked><span class="checkbox-box">✓</span><span>Word（.doc/.docx）</span></label>
+                                    <label class="checkbox-item active"><input type="checkbox" checked><span class="checkbox-box">✓</span><span>PDF（.pdf）</span></label>
+                                    <span class="other-input"><input type="text" class="input" placeholder="其他格式"></span>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">页数限制</div>
+                                <div class="radio-inline-group">
+                                    <label class="radio-inline active"><input type="radio" name="pageLimit" checked><span class="radio-dot"></span><span>不限制</span></label>
+                                    <label class="radio-inline"><input type="radio" name="pageLimit"><span class="radio-dot"></span><span>最多</span></label>
+                                    <input type="number" class="input" value="50" style="width:50px;padding:4px 8px;font-size:12px;">
+                                    <span class="limit-unit">页</span>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">必填文档（可多选）</div>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-item active"><input type="checkbox" checked><span class="checkbox-box">✓</span><span>需求说明书</span></label>
+                                    <label class="checkbox-item active"><input type="checkbox" checked><span class="checkbox-box">✓</span><span>测试报告</span></label>
+                                    <label class="checkbox-item"><input type="checkbox"><span class="checkbox-box">✓</span><span>设计文档</span></label>
+                                    <label class="checkbox-item"><input type="checkbox"><span class="checkbox-box">✓</span><span>用户手册</span></label>
+                                    <label class="checkbox-item"><input type="checkbox"><span class="checkbox-box">✓</span><span>其他</span></label>
+                                    <span class="other-input"><input type="text" class="input" placeholder="请输入文档名称"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. 截图/多模态配置 -->
+                        <div class="submission-card">
+                            <div class="submission-card-title"><span class="num">3.</span> 截图 / 多模态配置</div>
+                            <div class="card-row">
+                                <label class="checkbox-item active">
+                                    <input type="checkbox" checked>
+                                    <span class="checkbox-box">✓</span>
+                                    <span>启用截图 / 多模态提交</span>
+                                </label>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">支持格式（可多选）</div>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-item active"><input type="checkbox" checked><span class="checkbox-box">✓</span><span>jpg</span></label>
+                                    <label class="checkbox-item active"><input type="checkbox" checked><span class="checkbox-box">✓</span><span>png</span></label>
+                                    <label class="checkbox-item active"><input type="checkbox" checked><span class="checkbox-box">✓</span><span>gif</span></label>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">每个文件大小上限</div>
+                                <div class="limit-input-row">
+                                    <input type="number" class="input" value="20">
+                                    <span class="limit-unit">MB</span>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="switch-row" style="margin-bottom:0;">
+                                    <div class="switch-info">
+                                        <div class="switch-label">启用多模态大模型图像识别</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. 统一配置 -->
+                        <div class="submission-card">
+                            <div class="submission-card-title"><span class="num">4.</span> 统一配置</div>
+                            <div class="switch-row" style="margin-bottom:20px;">
+                                <div class="switch-info">
+                                    <div class="switch-label">提交前自动预解析</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                </label>
+                            </div>
+                            <div class="switch-row" style="margin-bottom:0;">
+                                <div class="switch-info">
+                                    <div class="switch-label">提交后自动触发大模型核查</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. 其他设置 -->
+                <section class="section">
+                    <div class="section-title">其他设置</div>
+
+                    <div class="form-row">
+                        <label class="form-label">个性化学习路径</label>
+                        <div class="form-control-wrap">
+                            <div class="switch-row" style="margin-bottom:0;">
+                                <div class="switch-info">
+                                    <div class="switch-label">是否根据得分自动推送微课资料</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label">同辈能力对比</label>
+                        <div class="form-control-wrap">
+                            <div class="switch-row" style="margin-bottom:0;">
+                                <div class="switch-info">
+                                    <div class="switch-label">隐私脱敏展示班级能力分布对比</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label">项目模板保存</label>
+                        <div class="form-control-wrap">
+                            <div class="template-save-row">
+                                <span class="template-save-text">将当前配置另存为模板，便于下次新建一键复用</span>
+                                <button type="button" class="btn btn-default btn-sm">保存为模板</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- 底部提示 -->
+        <div class="footer-hint">请完善所有必填项后点击“创建实训项目”，项目创建后可在项目列表中管理。</div>
+
+        <!-- 底部操作栏 -->
+        <footer class="page-footer">
+            <button type="button" class="btn btn-default" onclick="history.back()">取消</button>
+            <button type="button" class="btn btn-primary" onclick="submitCreate()">创建实训项目</button>
+        </footer>
+    </div>
+
+    <script>
+        // 实训类型切换
+        function selectTrainingType(el, type) {
+            document.querySelectorAll('input[name="trainingType"]').forEach(input => {
+                input.checked = false;
+            });
+            document.querySelectorAll('.radio-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            el.querySelector('input').checked = true;
+            el.classList.add('active');
+
+            const groupConfig = document.getElementById('groupSizeConfig');
+            if (type === 'group') {
+                groupConfig.classList.add('show');
+            } else {
+                groupConfig.classList.remove('show');
+            }
+        }
+
+        // 复选框交互
+        document.querySelectorAll('.checkbox-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.tagName === 'INPUT' && e.target.type === 'text') return;
+                const input = this.querySelector('input[type="checkbox"]');
+                if (input) {
+                    input.checked = !input.checked;
+                    this.classList.toggle('active', input.checked);
+                }
+            });
+        });
+
+        // 单选交互
+        document.querySelectorAll('.radio-inline').forEach(item => {
+            item.addEventListener('click', function() {
+                const name = this.querySelector('input').name;
+                document.querySelectorAll('input[name="' + name + '"]').forEach(input => {
+                    input.checked = false;
+                });
+                document.querySelectorAll('.radio-inline').forEach(r => {
+                    if (r.querySelector('input').name === name) r.classList.remove('active');
+                });
+                this.querySelector('input').checked = true;
+                this.classList.add('active');
+            });
+        });
+
+        // 提交创建
+        function submitCreate() {
+            alert('校验全部必填项后提交后端入库（原型演示）');
+        }
+    </script>
+</body>
+</html>

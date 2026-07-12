@@ -5,6 +5,9 @@ const API_BASE = '/api';
 const MAX_DOC_UPLOAD_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_DOC_EXTENSIONS = ['.pdf', '.doc', '.docx', '.txt', '.md', '.xlsx', '.xls', '.ppt', '.pptx'];
 
+// 实训状态排序权重：进行中 > 待开始 > 已截止
+const TRAINING_STATUS_ORDER = { in_progress: 0, active: 0, not_started: 1, ended: 2 };
+
 function getAuthHeaders(extra = {}) {
     const headers = { ...extra };
     try {
@@ -436,8 +439,7 @@ const views = {
             this.data.trainings = trainings;
 
             // 排序：进行中 > 待开始 > 已截止
-            const dashOrder = { in_progress: 0, active: 0, not_started: 1, ended: 2 };
-            const sortedTrainings = [...trainings].sort((a, b) => (dashOrder[a.status] || 9) - (dashOrder[b.status] || 9));
+            const sortedTrainings = [...trainings].sort((a, b) => (TRAINING_STATUS_ORDER[a.status] ?? 9) - (TRAINING_STATUS_ORDER[b.status] ?? 9));
 
             const showMore = trainings.length > 8;
             const displayTrainings = sortedTrainings.slice(0, 8);
@@ -671,12 +673,39 @@ const views = {
                 title: '',
                 description: '',
                 deadline: '',
+                startDate: '',
+                endDate: '',
                 dimensions: [],
                 documentUrl: '',
                 codeStandard: '',
                 courseId: '',
                 assignedClassIds: [],
-                status: 'not_started'
+                status: 'not_started',
+                trainingType: 'individual',
+                groupSize: '',
+                submissionConfig: {
+                    codeEnabled: true,
+                    codeExtensions: ['java', 'py', 'js'],
+                    codeExtensionsOther: '',
+                    codeForm: 'single',
+                    codeMaxSize: 500,
+                    docEnabled: true,
+                    docFormats: ['doc', 'pdf'],
+                    docFormatsOther: '',
+                    docPageLimit: 'unlimited',
+                    docMaxPages: 50,
+                    docRequired: ['requirements', 'testReport'],
+                    docRequiredOther: '',
+                    imageEnabled: true,
+                    imageFormats: ['jpg', 'png', 'gif'],
+                    imageMaxSize: 20,
+                    imageAiEnabled: true,
+                    autoPreParse: true,
+                    autoAiCheck: true
+                },
+                personalizedPath: true,
+                peerComparison: true,
+                saveAsTemplate: false
             },
             classDetail: null,
             classLoading: false,
@@ -882,8 +911,7 @@ const views = {
                 (t.assignedClasses || []).some(c => String(c) === String(detail.class_name) || String(c) === String(detail.class_code))
             );
             // 排序：进行中 > 待开始 > 已截止
-            const detailOrder = { in_progress: 0, active: 0, not_started: 1, ended: 2 };
-            classTrainings.sort((a, b) => (detailOrder[a.status] || 9) - (detailOrder[b.status] || 9));
+            classTrainings.sort((a, b) => (TRAINING_STATUS_ORDER[a.status] ?? 9) - (TRAINING_STATUS_ORDER[b.status] ?? 9));
             const listEl = document.getElementById('class-trainings-list');
             if (listEl) {
                 listEl.innerHTML = classTrainings.length > 0
@@ -1025,8 +1053,7 @@ const views = {
             }
 
             // 排序：进行中 > 待开始 > 已截止
-            const order = { in_progress: 0, active: 0, not_started: 1, ended: 2 };
-            list.sort((a, b) => (order[a.status] || 9) - (order[b.status] || 9));
+            list.sort((a, b) => (TRAINING_STATUS_ORDER[a.status] ?? 9) - (TRAINING_STATUS_ORDER[b.status] ?? 9));
 
             return list;
         },
@@ -1040,7 +1067,64 @@ const views = {
             return Array.from(classes);
         },
 
-        // 打开新建/编辑弹窗
+        // 打开新建页面（全屏滚动表单）
+        openCreatePage() {
+            const self = views.training;
+            self.data.editingId = null;
+            self.data.pendingFile = null;
+            self.data.formData = {
+                title: '',
+                description: '',
+                deadline: '',
+                startDate: '',
+                endDate: '',
+                dimensions: [],
+                documentUrl: '',
+                codeStandard: '',
+                courseId: '',
+                assignedClassIds: [],
+                status: 'not_started',
+                trainingType: 'individual',
+                groupSize: '',
+                submissionConfig: {
+                    codeEnabled: true,
+                    codeExtensions: ['java', 'py', 'js'],
+                    codeExtensionsOther: '',
+                    codeForm: 'single',
+                    codeMaxSize: 500,
+                    docEnabled: true,
+                    docFormats: ['doc', 'pdf'],
+                    docFormatsOther: '',
+                    docPageLimit: 'unlimited',
+                    docMaxPages: 50,
+                    docRequired: ['requirements', 'testReport'],
+                    docRequiredOther: '',
+                    imageEnabled: true,
+                    imageFormats: ['jpg', 'png', 'gif'],
+                    imageMaxSize: 20,
+                    imageAiEnabled: true,
+                    autoPreParse: true,
+                    autoAiCheck: true
+                },
+                personalizedPath: true,
+                peerComparison: true,
+                saveAsTemplate: false
+            };
+            self.renderCreatePage();
+        },
+
+        // 关闭新建页面，返回上一个界面
+        closeCreatePage() {
+            const self = views.training;
+            self.data.pendingFile = null;
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                router.navigate('training');
+            }
+        },
+
+        // 打开编辑弹窗
         openModal(training = null) {
             this.data.editingId = training ? training.id : null;
             this.data.pendingFile = null;
@@ -1054,17 +1138,6 @@ const views = {
                     codeStandard: training.codeStandard || '',
                     assignedClassIds: Array.isArray(training.assignedClassIds) ? [...training.assignedClassIds] : [],
                     status: training.status || 'not_started'
-                };
-            } else {
-                this.data.formData = {
-                    title: '',
-                    description: '',
-                    deadline: '',
-                    dimensions: [],
-                    documentUrl: '',
-                    codeStandard: '',
-                    assignedClassIds: [],
-                    status: 'not_started'
                 };
             }
             this.data.showModal = true;
@@ -1158,6 +1231,124 @@ const views = {
             } catch (e) {
                 toast.error(e.message || '保存失败');
             }
+        },
+
+        // 保存新建实训（全屏表单）
+        async saveCreateTraining() {
+            const self = views.training;
+            const form = document.getElementById('training-create-form');
+            if (!form) return;
+
+            const fd = new FormData(form);
+            const title = (fd.get('title') || '').trim();
+            const startDate = fd.get('startDate');
+            const endDate = fd.get('endDate');
+            const deadline = endDate || startDate;
+            const description = (fd.get('description') || '').trim();
+            const trainingType = fd.get('trainingType') || 'individual';
+            const groupSize = fd.get('groupSize') || '';
+
+            // 校验必填项
+            if (!title) {
+                toast.error('请输入实训名称');
+                return;
+            }
+            if (!startDate || !endDate) {
+                toast.error('请选择实训周期');
+                return;
+            }
+            if (startDate > endDate) {
+                toast.error('开始日期不能晚于结束日期');
+                return;
+            }
+
+            // 归属班级
+            const classId = fd.get('assignedClass');
+            if (!classId) {
+                toast.error('请选择归属班级');
+                return;
+            }
+            const classIds = [parseInt(classId, 10)];
+
+            // 收集成果提交规范配置
+            const submissionConfig = self.collectSubmissionConfig(form);
+
+            const trainingPayload = {
+                title: title,
+                course_name: title,
+                description: description,
+                deadline: deadline,
+                start_date: startDate,
+                end_date: endDate,
+                training_type: trainingType,
+                group_size: trainingType === 'group' ? (parseInt(groupSize, 10) || null) : null,
+                class_ids: classIds,
+                status: 'not_started',
+                document_url: self.data.formData.documentUrl || '',
+                code_standard: '',
+                dimensions: [],
+                submission_config: submissionConfig,
+                personalized_path: form.querySelector('input[name="personalizedPath"]')?.checked || false,
+                peer_comparison: form.querySelector('input[name="peerComparison"]')?.checked || false
+            };
+
+            try {
+                const result = await api.post('/training/create', JSON.stringify(trainingPayload));
+
+                // 若有待上传文档，在上传后再刷新列表
+                if (self.pendingFile && result && result.id) {
+                    await self.uploadDocument(result.id, self.pendingFile);
+                }
+
+                toast.success('实训项目已创建');
+                self.pendingFile = null;
+                await self.loadTrainings();
+                self.closeCreatePage();
+            } catch (e) {
+                toast.error(e.message || '保存失败');
+            }
+        },
+
+        // 收集成果提交规范配置
+        collectSubmissionConfig(form) {
+            const getChecked = (selector) => Array.from(form.querySelectorAll(selector)).map(cb => cb.value);
+            const getRadio = (name) => {
+                const el = form.querySelector(`input[name="${name}"]:checked`);
+                return el ? el.value : '';
+            };
+            const getNum = (name) => {
+                const el = form.querySelector(`input[name="${name}"]`);
+                return el ? parseInt(el.value, 10) || 0 : 0;
+            };
+
+            return {
+                code: {
+                    enabled: form.querySelector('input[name="codeEnabled"]')?.checked || false,
+                    extensions: getChecked('input[name="codeExtension"]:checked'),
+                    extensions_other: (form.querySelector('input[name="codeExtensionsOther"]')?.value || '').trim(),
+                    form: getRadio('codeForm'),
+                    max_size_mb: getNum('codeMaxSize')
+                },
+                document: {
+                    enabled: form.querySelector('input[name="docEnabled"]')?.checked || false,
+                    formats: getChecked('input[name="docFormat"]:checked'),
+                    formats_other: (form.querySelector('input[name="docFormatsOther"]')?.value || '').trim(),
+                    page_limit: getRadio('docPageLimit'),
+                    max_pages: getNum('docMaxPages'),
+                    required: getChecked('input[name="docRequired"]:checked'),
+                    required_other: (form.querySelector('input[name="docRequiredOther"]')?.value || '').trim()
+                },
+                image: {
+                    enabled: form.querySelector('input[name="imageEnabled"]')?.checked || false,
+                    formats: getChecked('input[name="imageFormat"]:checked'),
+                    max_size_mb: getNum('imageMaxSize'),
+                    ai_recognition: form.querySelector('input[name="imageAiEnabled"]')?.checked || false
+                },
+                automation: {
+                    auto_pre_parse: form.querySelector('input[name="autoPreParse"]')?.checked || false,
+                    auto_ai_check: form.querySelector('input[name="autoAiCheck"]')?.checked || false
+                }
+            };
         },
 
         // 归档实训
@@ -1362,6 +1553,404 @@ const views = {
             }
         },
 
+        // 渲染新建实训页面（全屏滚动表单）
+        renderCreatePage() {
+            const self = views.training;
+            const content = document.getElementById('page-content');
+            const classes = self.data.classes || [];
+            const esc = self.escapeHtml;
+            const cfg = self.data.formData.submissionConfig || {};
+
+            const isChecked = (arr, val) => Array.isArray(arr) && arr.includes(val) ? 'checked' : '';
+            const isActive = (arr, val) => Array.isArray(arr) && arr.includes(val) ? 'active' : '';
+            const radioChecked = (name, val, defaultVal) => {
+                const current = cfg[name] || defaultVal;
+                return current === val ? 'checked' : '';
+            };
+
+            content.innerHTML = `
+                <div class="create-training-page">
+                    <main class="create-page-body">
+                        <div class="create-page-content">
+                            <div class="create-content-header">
+                                <div class="create-page-title">新建实训项目</div>
+                                <button type="button" class="create-page-close" onclick="views.training.closeCreatePage()">&times;</button>
+                            </div>
+                            <form id="training-create-form" onsubmit="event.preventDefault();views.training.saveCreateTraining();">
+                                <section class="create-section">
+                                    <div class="create-section-title">基本信息</div>
+
+                                    <div class="create-form-row">
+                                        <label class="create-form-label required">实训名称</label>
+                                        <div class="create-form-control">
+                                            <input type="text" class="create-input" name="title" value="${esc(self.data.formData.title)}" placeholder="请输入实训名称" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="create-form-row">
+                                        <label class="create-form-label required">实训周期</label>
+                                        <div class="create-form-control">
+                                            <div class="create-date-range">
+                                                <input type="datetime-local" class="create-input" name="startDate" value="${esc(self.data.formData.startDate)}" placeholder="开始日期" required>
+                                                <span class="create-date-separator">—</span>
+                                                <input type="datetime-local" class="create-input" name="endDate" value="${esc(self.data.formData.endDate)}" placeholder="结束日期" required>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="create-form-row">
+                                        <label class="create-form-label required">归属班级</label>
+                                        <div class="create-form-control">
+                                            <select class="create-select" name="assignedClass" required>
+                                                <option value="">请选择归属班级</option>
+                                                ${classes.map(c => `<option value="${c.id}">${esc(c.class_name)} (${c.student_count || 0}人)</option>`).join('')}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="create-form-row">
+                                        <label class="create-form-label">实训类型</label>
+                                        <div class="create-form-control">
+                                            <div class="create-radio-group">
+                                                <label class="create-radio-card active" onclick="views.training.selectTrainingType(this, 'individual')">
+                                                    <input type="radio" name="trainingType" value="individual" checked>
+                                                    <span class="create-radio-dot"></span>
+                                                    <span class="create-radio-text">个人实训</span>
+                                                </label>
+                                                <label class="create-radio-card" onclick="views.training.selectTrainingType(this, 'group')">
+                                                    <input type="radio" name="trainingType" value="group">
+                                                    <span class="create-radio-dot"></span>
+                                                    <span class="create-radio-text">小组实训</span>
+                                                </label>
+                                            </div>
+                                            <div class="create-group-size-config" id="create-group-size-config">
+                                                <input type="number" class="create-input" name="groupSize" min="3" max="5" placeholder="请输入每组人数">
+                                                <span class="create-group-size-hint">建议 3-5 人/组</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section class="create-section">
+                                    <div class="create-section-title">实训内容</div>
+
+                                    <div class="create-form-row">
+                                        <label class="create-form-label required">实训任务描述</label>
+                                        <div class="create-form-control">
+                                            <textarea class="create-textarea" name="description" rows="4" placeholder="请详细描述实训目标、任务要求、预期成果等内容" required>${esc(self.data.formData.description)}</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="create-form-row">
+                                        <label class="create-form-label">需求文档上传</label>
+                                        <div class="create-form-control">
+                                            <div class="create-upload-area" id="create-doc-upload-area" onclick="document.getElementById('create-doc-upload').click()">
+                                                <svg class="create-upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                    <polyline points="17 8 12 3 7 8"/>
+                                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                                </svg>
+                                                <div class="create-upload-text" id="create-doc-upload-text">点击或拖拽文件到此处上传</div>
+                                                <div class="create-upload-hint">支持 ${ALLOWED_DOC_EXTENSIONS.join(' / ')} 格式，大小不超过 50MB</div>
+                                            </div>
+                                            <input type="file" id="create-doc-upload" style="display:none" accept="${ALLOWED_DOC_EXTENSIONS.join(',')}">
+                                            <div id="create-doc-upload-status" style="margin-top:8px;font-size:13px;"></div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section class="create-section">
+                                    <div class="create-section-title">成果提交规范配置</div>
+                                    <div class="create-submission-grid">
+                                        <div class="create-submission-card">
+                                            <div class="create-submission-card-title"><span class="num">1.</span> 源代码配置</div>
+                                            <div class="create-card-row">
+                                                <label class="create-checkbox-item ${cfg.codeEnabled ? 'active' : ''}">
+                                                    <input type="checkbox" name="codeEnabled" value="1" ${cfg.codeEnabled ? 'checked' : ''}>
+                                                    <span class="create-checkbox-box">✓</span>
+                                                    <span>启用源代码提交</span>
+                                                </label>
+                                            </div>
+                                            <div class="create-card-row">
+                                                <div class="create-card-label">支持后缀（可多选）</div>
+                                                <div class="create-checkbox-group">
+                                                    <label class="create-checkbox-item ${isActive(cfg.codeExtensions, 'java')}"><input type="checkbox" name="codeExtension" value="java" ${isChecked(cfg.codeExtensions, 'java')}><span class="create-checkbox-box">✓</span><span>java</span></label>
+                                                    <label class="create-checkbox-item ${isActive(cfg.codeExtensions, 'py')}"><input type="checkbox" name="codeExtension" value="py" ${isChecked(cfg.codeExtensions, 'py')}><span class="create-checkbox-box">✓</span><span>py</span></label>
+                                                    <label class="create-checkbox-item ${isActive(cfg.codeExtensions, 'js')}"><input type="checkbox" name="codeExtension" value="js" ${isChecked(cfg.codeExtensions, 'js')}><span class="create-checkbox-box">✓</span><span>js</span></label>
+                                                    <label class="create-checkbox-item ${isActive(cfg.codeExtensions, 'sql')}"><input type="checkbox" name="codeExtension" value="sql" ${isChecked(cfg.codeExtensions, 'sql')}><span class="create-checkbox-box">✓</span><span>sql</span></label>
+                                                    <label class="create-checkbox-item ${isActive(cfg.codeExtensions, 'vue')}"><input type="checkbox" name="codeExtension" value="vue" ${isChecked(cfg.codeExtensions, 'vue')}><span class="create-checkbox-box">✓</span><span>vue</span></label>
+                                                    <label class="create-checkbox-item ${isActive(cfg.codeExtensions, 'cpp')}"><input type="checkbox" name="codeExtension" value="cpp" ${isChecked(cfg.codeExtensions, 'cpp')}><span class="create-checkbox-box">✓</span><span>cpp</span></label>
+                                                    <label class="create-checkbox-item ${isActive(cfg.codeExtensions, 'go')}"><input type="checkbox" name="codeExtension" value="go" ${isChecked(cfg.codeExtensions, 'go')}><span class="create-checkbox-box">✓</span><span>go</span></label>
+                                                    <label class="create-checkbox-item ${isActive(cfg.codeExtensions, 'php')}"><input type="checkbox" name="codeExtension" value="php" ${isChecked(cfg.codeExtensions, 'php')}><span class="create-checkbox-box">✓</span><span>php</span></label>
+                                                    <span class="create-other-input">其他 <input type="text" class="create-input" name="codeExtensionsOther" value="${esc(cfg.codeExtensionsOther)}" placeholder="后缀"></span>
+                                                </div>
+                                            </div>
+                                            <div class="create-card-row">
+                                                <div class="create-card-label">提交形式</div>
+                                                <div class="create-radio-inline-group">
+                                                    <label class="create-radio-inline ${cfg.codeForm === 'single' ? 'active' : ''}"><input type="radio" name="codeForm" value="single" ${radioChecked('codeForm', 'single', 'single')}><span class="create-radio-dot"></span><span>单文件</span></label>
+                                                    <label class="create-radio-inline ${cfg.codeForm === 'archive' ? 'active' : ''}"><input type="radio" name="codeForm" value="archive" ${radioChecked('codeForm', 'archive', 'single')}><span class="create-radio-dot"></span><span>压缩包</span></label>
+                                                </div>
+                                            </div>
+                                            <div class="create-card-row">
+                                                <div class="create-card-label">大小上限</div>
+                                                <div class="create-limit-input-row">
+                                                    <input type="number" class="create-input" name="codeMaxSize" value="${cfg.codeMaxSize}">
+                                                    <span class="create-limit-unit">MB</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="create-submission-card">
+                                            <div class="create-submission-card-title"><span class="num">2.</span> 文档配置</div>
+                                            <div class="create-card-row">
+                                                <label class="create-checkbox-item ${cfg.docEnabled ? 'active' : ''}">
+                                                    <input type="checkbox" name="docEnabled" value="1" ${cfg.docEnabled ? 'checked' : ''}>
+                                                    <span class="create-checkbox-box">✓</span>
+                                                    <span>启用文档提交</span>
+                                                </label>
+                                            </div>
+                                            <div class="create-card-row">
+                                                <div class="create-card-label">支持格式（可多选）</div>
+                                                <div class="create-checkbox-group">
+                                                    <label class="create-checkbox-item ${isActive(cfg.docFormats, 'doc')}"><input type="checkbox" name="docFormat" value="doc" ${isChecked(cfg.docFormats, 'doc')}><span class="create-checkbox-box">✓</span><span>Word（.doc/.docx）</span></label>
+                                                    <label class="create-checkbox-item ${isActive(cfg.docFormats, 'pdf')}"><input type="checkbox" name="docFormat" value="pdf" ${isChecked(cfg.docFormats, 'pdf')}><span class="create-checkbox-box">✓</span><span>PDF（.pdf）</span></label>
+                                                    <span class="create-other-input">其他 <input type="text" class="create-input" name="docFormatsOther" value="${esc(cfg.docFormatsOther)}" placeholder="格式"></span>
+                                                </div>
+                                            </div>
+                                            <div class="create-card-row">
+                                                <div class="create-card-label">页数限制</div>
+                                                <div class="create-radio-inline-group">
+                                                    <label class="create-radio-inline ${cfg.docPageLimit === 'unlimited' ? 'active' : ''}"><input type="radio" name="docPageLimit" value="unlimited" ${radioChecked('docPageLimit', 'unlimited', 'unlimited')}><span class="create-radio-dot"></span><span>不限制</span></label>
+                                                    <label class="create-radio-inline ${cfg.docPageLimit === 'limit' ? 'active' : ''}"><input type="radio" name="docPageLimit" value="limit" ${radioChecked('docPageLimit', 'limit', 'unlimited')}><span class="create-radio-dot"></span><span>最多</span></label>
+                                                    <input type="number" class="create-input" name="docMaxPages" value="${cfg.docMaxPages}" style="width:50px;padding:4px 8px;font-size:12px;">
+                                                    <span class="create-limit-unit">页</span>
+                                                </div>
+                                            </div>
+                                            <div class="create-card-row">
+                                                <div class="create-card-label">必填文档（可多选）</div>
+                                                <div class="create-checkbox-group">
+                                                    <label class="create-checkbox-item ${isActive(cfg.docRequired, 'requirements')}"><input type="checkbox" name="docRequired" value="requirements" ${isChecked(cfg.docRequired, 'requirements')}><span class="create-checkbox-box">✓</span><span>需求说明书</span></label>
+                                                    <label class="create-checkbox-item ${isActive(cfg.docRequired, 'testReport')}"><input type="checkbox" name="docRequired" value="testReport" ${isChecked(cfg.docRequired, 'testReport')}><span class="create-checkbox-box">✓</span><span>测试报告</span></label>
+                                                    <label class="create-checkbox-item ${isActive(cfg.docRequired, 'designDoc')}"><input type="checkbox" name="docRequired" value="designDoc" ${isChecked(cfg.docRequired, 'designDoc')}><span class="create-checkbox-box">✓</span><span>设计文档</span></label>
+                                                    <label class="create-checkbox-item ${isActive(cfg.docRequired, 'userManual')}"><input type="checkbox" name="docRequired" value="userManual" ${isChecked(cfg.docRequired, 'userManual')}><span class="create-checkbox-box">✓</span><span>用户手册</span></label>
+                                                    <span class="create-other-input">其他 <input type="text" class="create-input" name="docRequiredOther" value="${esc(cfg.docRequiredOther)}" placeholder="文档名"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="create-submission-card">
+                                            <div class="create-submission-card-title"><span class="num">3.</span> 截图 / 多模态配置</div>
+                                            <div class="create-card-row">
+                                                <label class="create-checkbox-item ${cfg.imageEnabled ? 'active' : ''}">
+                                                    <input type="checkbox" name="imageEnabled" value="1" ${cfg.imageEnabled ? 'checked' : ''}>
+                                                    <span class="create-checkbox-box">✓</span>
+                                                    <span>启用截图 / 多模态提交</span>
+                                                </label>
+                                            </div>
+                                            <div class="create-card-row">
+                                                <div class="create-card-label">支持格式（可多选）</div>
+                                                <div class="create-checkbox-group">
+                                                    <label class="create-checkbox-item ${isActive(cfg.imageFormats, 'jpg')}"><input type="checkbox" name="imageFormat" value="jpg" ${isChecked(cfg.imageFormats, 'jpg')}><span class="create-checkbox-box">✓</span><span>jpg</span></label>
+                                                    <label class="create-checkbox-item ${isActive(cfg.imageFormats, 'png')}"><input type="checkbox" name="imageFormat" value="png" ${isChecked(cfg.imageFormats, 'png')}><span class="create-checkbox-box">✓</span><span>png</span></label>
+                                                    <label class="create-checkbox-item ${isActive(cfg.imageFormats, 'gif')}"><input type="checkbox" name="imageFormat" value="gif" ${isChecked(cfg.imageFormats, 'gif')}><span class="create-checkbox-box">✓</span><span>gif</span></label>
+                                                </div>
+                                            </div>
+                                            <div class="create-card-row">
+                                                <div class="create-card-label">每个文件大小上限</div>
+                                                <div class="create-limit-input-row">
+                                                    <input type="number" class="create-input" name="imageMaxSize" value="${cfg.imageMaxSize}">
+                                                    <span class="create-limit-unit">MB</span>
+                                                </div>
+                                            </div>
+                                            <div class="create-card-row">
+                                                <div class="create-switch-row" style="margin-bottom:0;">
+                                                    <div class="create-switch-info">
+                                                        <div class="create-switch-label">启用多模态大模型图像识别</div>
+                                                    </div>
+                                                    <label class="toggle-switch">
+                                                        <input type="checkbox" name="imageAiEnabled" ${cfg.imageAiEnabled ? 'checked' : ''}>
+                                                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="create-submission-card">
+                                            <div class="create-submission-card-title"><span class="num">4.</span> 统一配置</div>
+                                            <div class="create-switch-row" style="margin-bottom:20px;">
+                                                <div class="create-switch-info">
+                                                    <div class="create-switch-label">提交前自动预解析</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" name="autoPreParse" ${cfg.autoPreParse ? 'checked' : ''}>
+                                                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                                </label>
+                                            </div>
+                                            <div class="create-switch-row" style="margin-bottom:0;">
+                                                <div class="create-switch-info">
+                                                    <div class="create-switch-label">提交后自动触发大模型核查</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" name="autoAiCheck" ${cfg.autoAiCheck ? 'checked' : ''}>
+                                                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section class="create-section">
+                                    <div class="create-section-title">其他设置</div>
+
+                                    <div class="create-form-row">
+                                        <label class="create-form-label">个性化学习路径</label>
+                                        <div class="create-form-control">
+                                            <div class="create-switch-row" style="margin-bottom:0;">
+                                                <div class="create-switch-info">
+                                                    <div class="create-switch-label">是否根据得分自动推送微课资料</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" name="personalizedPath" ${self.data.formData.personalizedPath ? 'checked' : ''}>
+                                                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="create-form-row">
+                                        <label class="create-form-label">同辈能力对比</label>
+                                        <div class="create-form-control">
+                                            <div class="create-switch-row" style="margin-bottom:0;">
+                                                <div class="create-switch-info">
+                                                    <div class="create-switch-label">隐私脱敏展示班级能力分布对比</div>
+                                                </div>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" name="peerComparison" ${self.data.formData.peerComparison ? 'checked' : ''}>
+                                                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </section>
+                            </form>
+                        </div>
+                    </main>
+
+                    <div class="create-footer-hint">请完善所有必填项后点击“创建实训项目”，项目创建后可在项目列表中管理。</div>
+
+                    <footer class="create-page-footer">
+                        <button type="button" class="btn btn-default" onclick="views.training.closeCreatePage()">取消</button>
+                        <button type="button" class="btn btn-primary" onclick="views.training.saveCreateTraining()">创建实训项目</button>
+                    </footer>
+                </div>
+            `;
+
+            // 绑定复选框样式切换
+            content.querySelectorAll('.create-checkbox-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (e.target.tagName === 'INPUT' && e.target.type === 'text') return;
+                    const input = this.querySelector('input[type="checkbox"]');
+                    if (input) {
+                        input.checked = !input.checked;
+                        this.classList.toggle('active', input.checked);
+                    }
+                });
+            });
+
+            // 绑定单选样式切换
+            content.querySelectorAll('.create-radio-inline').forEach(item => {
+                item.addEventListener('click', function() {
+                    const name = this.querySelector('input').name;
+                    content.querySelectorAll(`input[name="${name}"]`).forEach(input => input.checked = false);
+                    content.querySelectorAll('.create-radio-inline').forEach(r => {
+                        if (r.querySelector('input').name === name) r.classList.remove('active');
+                    });
+                    this.querySelector('input').checked = true;
+                    this.classList.add('active');
+                });
+            });
+
+            // 绑定文档上传
+            const docInput = document.getElementById('create-doc-upload');
+            const validateAndSetFile = (file) => {
+                const textEl = document.getElementById('create-doc-upload-text');
+                const statusEl = document.getElementById('create-doc-upload-status');
+                const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+                if (!ALLOWED_DOC_EXTENSIONS.includes(ext)) {
+                    toast.error(`不支持的文件格式:${ext},请上传 ${ALLOWED_DOC_EXTENSIONS.join(' / ')} 文件`);
+                    self.pendingFile = null;
+                    if (docInput) docInput.value = '';
+                    if (textEl) textEl.textContent = '点击或拖拽文件到此处上传';
+                    return;
+                }
+                if (file.size > MAX_DOC_UPLOAD_SIZE) {
+                    toast.error('文件大小超过 50MB 限制');
+                    self.pendingFile = null;
+                    if (docInput) docInput.value = '';
+                    if (textEl) textEl.textContent = '点击或拖拽文件到此处上传';
+                    return;
+                }
+                self.pendingFile = file;
+                if (textEl) textEl.textContent = `已选择:${file.name}`;
+                if (statusEl) {
+                    statusEl.innerHTML = `<div class="doc-link">待上传:<span style="color:var(--text-primary)">${self.escapeHtml(file.name)}</span>(${(file.size / 1024).toFixed(1)} KB)<button type="button" class="btn btn-text" onclick="views.training.clearCreatePendingFile()">清除</button></div>`;
+                }
+            };
+            if (docInput) {
+                docInput.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) validateAndSetFile(file);
+                };
+                const uploadArea = document.getElementById('create-doc-upload-area');
+                if (uploadArea) {
+                    uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); };
+                    uploadArea.ondragleave = (e) => { e.preventDefault(); uploadArea.classList.remove('dragover'); };
+                    uploadArea.ondrop = (e) => {
+                        e.preventDefault();
+                        uploadArea.classList.remove('dragover');
+                        const file = e.dataTransfer.files[0];
+                        if (file) validateAndSetFile(file);
+                    };
+                }
+            }
+
+            // 滚动到顶部
+            content.scrollTop = 0;
+        },
+
+        // 切换实训类型
+        selectTrainingType(el, type) {
+            const form = document.getElementById('training-create-form');
+            if (!form) return;
+            form.querySelectorAll('input[name="trainingType"]').forEach(input => input.checked = false);
+            form.querySelectorAll('.create-radio-card').forEach(card => card.classList.remove('active'));
+            el.querySelector('input').checked = true;
+            el.classList.add('active');
+
+            const groupConfig = document.getElementById('create-group-size-config');
+            if (groupConfig) {
+                groupConfig.classList.toggle('show', type === 'group');
+            }
+        },
+
+        // 清除新建页待上传文件
+        clearCreatePendingFile() {
+            this.pendingFile = null;
+            const docInput = document.getElementById('create-doc-upload');
+            const textEl = document.getElementById('create-doc-upload-text');
+            const statusEl = document.getElementById('create-doc-upload-status');
+            if (docInput) docInput.value = '';
+            if (textEl) textEl.textContent = '点击或拖拽文件到此处上传';
+            if (statusEl) statusEl.innerHTML = '';
+        },
+
+        // 保存为模板（演示占位）
+        saveAsTemplate() {
+            toast.info('模板保存功能开发中，当前配置可在提交时一并保存');
+        },
+
         // 清除待上传文件
         clearPendingFile() {
             this.pendingFile = null;
@@ -1475,13 +2064,13 @@ const views = {
                 return self.renderClassDetail();
             }
 
-            // 首页快捷入口:action=create 时自动打开新建弹窗
+            // 首页快捷入口:action=create 时进入新建页面
             const action = self.getQueryParam('action');
             if (action === 'create') {
                 history.replaceState(null, null, '#training');
                 content.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>加载中...</p></div>';
                 await Promise.all([self.loadTrainings(), self.loadClasses(), self.loadCourses()]);
-                self.openModal();
+                self.openCreatePage();
                 return;
             }
 
@@ -1516,7 +2105,7 @@ const views = {
                     <div class="page-header-left">
                         <h2>实训管理</h2>
                     </div>
-                    <button class="btn btn-primary" onclick="views.training.openModal()">
+                    <button class="btn btn-primary" onclick="views.training.openCreatePage()">
                         <span style="font-size:16px;font-weight:700;margin-right:4px;">+</span>
                         新建实训
                     </button>
@@ -1589,7 +2178,7 @@ const views = {
                 <div class="training-list">
                     ${filteredTrainings.length > 0
                         ? filteredTrainings.map(t => self.renderTrainingCard(t)).join('')
-                        : `<div class="empty-state"><div class="empty-icon">📋</div><p>暂无符合条件的实训项目</p><button class="btn btn-primary" onclick="views.training.openModal()">创建第一个实训</button></div>`
+                        : `<div class="empty-state"><div class="empty-icon">📋</div><p>暂无符合条件的实训项目</p><button class="btn btn-primary" onclick="views.training.openCreatePage()">创建第一个实训</button></div>`
                     }
                 </div>
             `;
@@ -3786,11 +4375,9 @@ function pad2(n) {
 }
 
 function updateWorkbenchClock() {
-    const timeEl = document.getElementById('header-time');
     const dateEl = document.getElementById('header-date');
-    if (!timeEl || !dateEl) return;
+    if (!dateEl) return;
     const now = new Date();
-    timeEl.textContent = `${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
     dateEl.textContent = `${now.getFullYear()}年${pad2(now.getMonth() + 1)}月${pad2(now.getDate())}日 ${WEEKDAY_NAMES[now.getDay()]}`;
 }
 
@@ -3823,7 +4410,7 @@ async function initWorkbench() {
     if (window._workbenchTimer) {
         clearInterval(window._workbenchTimer);
     }
-    window._workbenchTimer = setInterval(updateWorkbenchClock, 1000);
+    window._workbenchTimer = setInterval(updateWorkbenchClock, 60000);
 
     try {
         const info = await api.get('/semesters/current');
