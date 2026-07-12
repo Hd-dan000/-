@@ -3976,6 +3976,16 @@ const views = {
             const diff = Math.floor((submit - base) / (1000 * 60 * 60 * 24));
             return diff > 0 ? diff : 0;
         },
+        formatDateTime(value) {
+            if (!value) return '-';
+            const str = String(value).trim();
+            if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(str)) return str;
+            if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(str)) return str.slice(0, 16);
+            const d = new Date(str.replace(' ', 'T'));
+            if (isNaN(d.getTime())) return str;
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        },
         renderStatusBlock(item) {
             const training = this.data.training || {};
             const deadline = training.deadline || '';
@@ -4034,7 +4044,9 @@ const views = {
                 ended: { text: '已截止', class: 'td-status-ended' }
             };
             const status = statusMap[t.status] || statusMap.not_started;
-            const period = (t.startDate && t.endDate) ? `${t.startDate} ~ ${t.endDate}` : (t.deadline ? `截止 ${t.deadline}` : '-');
+            const start = this.formatDateTime(t.startDate);
+            const end = this.formatDateTime(t.endDate);
+            const period = (start !== '-' && end !== '-') ? `${start} ~ ${end}` : (t.deadline ? `截止 ${this.formatDateTime(t.deadline)}` : '-');
             const assignedClasses = (t.assignedClasses || []).join('、') || '-';
             return `
                 <div class="td-section-title">实训基础信息</div>
@@ -4058,7 +4070,7 @@ const views = {
                         </div>
                         <div class="td-info-item">
                             <span class="td-info-label">提交截止时间</span>
-                            <span class="td-info-value">${t.deadline || '-'}</span>
+                            <span class="td-info-value">${this.formatDateTime(t.deadline)}</span>
                         </div>
                         <div class="td-info-item">
                             <span class="td-info-label">当前状态</span>
@@ -4074,7 +4086,7 @@ const views = {
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             导出全部实训数据
                         </button>
-                        <button class="btn btn-danger" onclick="views['training-detail'].onResetSubmissions()">
+                        <button class="btn btn-default td-reset-btn" onclick="views['training-detail'].onResetSubmissions()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                             一键重置本实训所有学生提交记录
                         </button>
@@ -4091,7 +4103,8 @@ const views = {
             const items = isGroup ? this.data.groups : this.data.students;
             const groupOptions = items.map(item => {
                 const label = isGroup ? item.displayName : `${item.studentName}（${item.studentId || '-'}）`;
-                return `<option value="${item.id}">${this.escapeHtml(label)}</option>`;
+                const selected = String(this.data.filters.group) === String(item.id) ? 'selected' : '';
+                return `<option value="${item.id}" ${selected}>${this.escapeHtml(label)}</option>`;
             }).join('');
             return `
                 <div class="td-filter-card">
@@ -4099,27 +4112,27 @@ const views = {
                         <div class="td-filter-item">
                             <span class="td-filter-label">提交状态</span>
                             <select class="filter-select" onchange="views['training-detail'].onFilterChange('status', this.value)">
-                                <option value="all">全部</option>
-                                <option value="submitted">已提交待评审</option>
-                                <option value="late">逾期提交</option>
-                                <option value="not_submitted">未提交</option>
+                                <option value="all" ${this.data.filters.status === 'all' ? 'selected' : ''}>全部</option>
+                                <option value="submitted" ${this.data.filters.status === 'submitted' ? 'selected' : ''}>已提交待评审</option>
+                                <option value="late" ${this.data.filters.status === 'late' ? 'selected' : ''}>逾期提交</option>
+                                <option value="not_submitted" ${this.data.filters.status === 'not_submitted' ? 'selected' : ''}>未提交</option>
                             </select>
                         </div>
                         <div class="td-filter-item">
                             <span class="td-filter-label">评分区间</span>
                             <select class="filter-select" onchange="views['training-detail'].onFilterChange('scoreRange', this.value)">
-                                <option value="all">全部</option>
-                                <option value="90-100">90-100</option>
-                                <option value="80-89">80-89</option>
-                                <option value="70-79">70-79</option>
-                                <option value="60-69">60-69</option>
-                                <option value="0-59">0-59</option>
+                                <option value="all" ${this.data.filters.scoreRange === 'all' ? 'selected' : ''}>全部</option>
+                                <option value="90-100" ${this.data.filters.scoreRange === '90-100' ? 'selected' : ''}>90-100</option>
+                                <option value="80-89" ${this.data.filters.scoreRange === '80-89' ? 'selected' : ''}>80-89</option>
+                                <option value="70-79" ${this.data.filters.scoreRange === '70-79' ? 'selected' : ''}>70-79</option>
+                                <option value="60-69" ${this.data.filters.scoreRange === '60-69' ? 'selected' : ''}>60-69</option>
+                                <option value="0-59" ${this.data.filters.scoreRange === '0-59' ? 'selected' : ''}>0-59</option>
                             </select>
                         </div>
                         <div class="td-filter-item">
                             <span class="td-filter-label">${filterLabel}</span>
                             <select class="filter-select" onchange="views['training-detail'].onFilterChange('group', this.value)">
-                                <option value="all">${allLabel}</option>
+                                <option value="all" ${this.data.filters.group === 'all' ? 'selected' : ''}>${allLabel}</option>
                                 ${groupOptions}
                             </select>
                         </div>
@@ -4451,8 +4464,8 @@ const views = {
                 }),
                 trainingType: isGroup ? 'group' : 'individual',
                 groupSize: isGroup ? 4 : null,
-                startDate: '2025-05-10',
-                endDate: '2025-06-10'
+                startDate: '2025-05-10 09:00',
+                endDate: '2025-06-10 23:59'
             };
         },
         mockSubmissions() {

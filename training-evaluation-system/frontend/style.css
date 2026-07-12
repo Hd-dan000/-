@@ -6163,6 +6163,18 @@ select.form-control {
     flex-wrap: wrap;
 }
 
+.td-reset-btn {
+    color: var(--danger);
+    background: #fff;
+    border-color: var(--danger);
+}
+
+.td-reset-btn:hover {
+    color: #fff;
+    background: var(--danger);
+    border-color: var(--danger);
+}
+
 /* 筛选栏 */
 .td-filter-card {
     background: var(--bg-card);
